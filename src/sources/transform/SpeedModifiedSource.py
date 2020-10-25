@@ -1,5 +1,6 @@
 from sources.Source import Source
 
+
 class SpeedModifiedSource(Source):
     def __init__(self, modifier: float, child: Source):
         self.modifier = 1.0 / float(modifier)

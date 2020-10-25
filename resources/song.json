@@ -1,6 +1,6 @@
 {
     "type": "speed",
-    "modifier": 3.0,
+    "modifier": 2.0,
     "child": {
         "type": "sequential",
         "children": [

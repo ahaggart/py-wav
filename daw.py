@@ -1,19 +1,13 @@
 #!/usr/bin/env python
-import json
 import numpy as np
-import matplotlib.pyplot as plt
-import typing
-from typing import List, Dict, Tuple
-
 import simpleaudio as sa
 
-from parser import construct, registered_classes
+from parser import SourceParser
 from sources.Source import Source
-from sources.registry import registered_sources
+from sources.registry import get_registry
 
 fs = 44100  # 44100 samples per second
 
-registered_classes.update(registered_sources)
 
 def play(root: Source, fs: int):
     buffer = root.get_buffer(fs)
@@ -30,8 +24,8 @@ def play(root: Source, fs: int):
     # Wait for playback to finish before exiting
     play_obj.wait_done()
 
-with open("song.json") as song:
-    raw = json.load(song)
-    root = construct(raw)
+
+parser = SourceParser(get_registry())
+root = parser.parse("resources/song.json")
 
 play(root, fs)

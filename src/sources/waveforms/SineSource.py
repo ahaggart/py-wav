@@ -1,5 +1,7 @@
 import numpy as np
+
 from sources.Source import Source
+
 
 class SineSource(Source):
     def __init__(self, freq, seconds):
