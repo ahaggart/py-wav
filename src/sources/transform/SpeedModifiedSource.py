@@ -9,5 +9,5 @@ class SpeedModifiedSource(Source):
     def get_buffer(self, fs):
         return self.child.get_buffer(fs * self.modifier)
 
-    def get_duration(self):
-        return self.child.get_duration() * self.modifier
+    def get_duration(self, fs):
+        return self.child.get_duration(fs * self.modifier)

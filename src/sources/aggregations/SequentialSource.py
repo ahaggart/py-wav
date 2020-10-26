@@ -1,12 +1,23 @@
 from typing import List
+
+import numpy as np
+
 from sources.Source import Source
 from sources.aggregations.AdditiveSource import AdditiveSource
 
-class SequentialSource(AdditiveSource):
+class SequentialSource(Source):
     def __init__(self, children: List[Source]=None):
-        AdditiveSource.__init__(self, None)
-        if children is not None:
-            acc = 0
-            for child in children:
-                self.with_source(acc, child)
-                acc += child.get_duration()
+        self.children = children
+
+    def get_buffer(self, fs):
+        buffer = np.zeros(self.get_duration(fs))
+        acc = 0
+        for child in self.children:
+            start = acc
+            acc += child.get_duration(fs)
+            end = acc
+            buffer[start:end] += child.get_buffer(fs)
+        return buffer
+
+    def get_duration(self, fs) -> int:
+        return sum([child.get_duration(fs) for child in self.children])

@@ -14,5 +14,5 @@ class SineSource(Source):
         note = np.sin(self.freq * t * 2 * np.pi)
         return note
 
-    def get_duration(self):
-        return self.seconds
+    def get_duration(self, fs):
+        return int(self.seconds * fs)

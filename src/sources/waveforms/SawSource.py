@@ -1,6 +1,7 @@
 import numpy as np
 from sources.Source import Source
 
+
 class SawSource(Source):
     def __init__(self, freq, seconds):
         self.freq = freq
@@ -13,5 +14,5 @@ class SawSource(Source):
         note = np.divide(np.mod(t, int(self.per*fs)), self.per*fs)
         return note
 
-    def get_duration(self):
-        return self.seconds
+    def get_duration(self, fs):
+        return int(self.seconds * fs)

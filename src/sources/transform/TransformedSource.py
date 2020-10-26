@@ -15,5 +15,5 @@ class TransformedSource(Source):
             transform.apply(buffer)
         return buffer
 
-    def get_duration(self):
-        return self.child.get_duration()
+    def get_duration(self, fs):
+        return self.child.get_duration(fs)

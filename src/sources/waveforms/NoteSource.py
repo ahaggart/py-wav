@@ -20,6 +20,7 @@ notes = {
     "Ab": 830.61,
 }
 
+
 class NoteSource(Source): 
     sources = {}  # to be populated in __init__.py
    
@@ -31,5 +32,5 @@ class NoteSource(Source):
     def get_buffer(self, fs):
         return self.source.get_buffer(fs)
 
-    def get_duration(self):
-        return self.source.get_duration()
+    def get_duration(self, fs):
+        return self.source.get_duration(fs)
