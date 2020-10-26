@@ -3,14 +3,14 @@ from typing import Type, Dict
 from sources.Source import Source
 from sources.aggregations.SequentialSource import SequentialSource
 from sources.aggregations.AdditiveSource import AdditiveSource
-from sources.transform.SpeedModifiedSource import SpeedModifiedSource
+from sources.transform.DilatedSource import DilatedSource
 from sources.waveforms.SineSource import SineSource
 from sources.waveforms.NoteSource import NoteSource
 from sources.waveforms.SawSource import SawSource
 
 __registered_sources: Dict[str, Type[Source]] = {
     "additive": AdditiveSource,
-    "speed": SpeedModifiedSource,
+    "dilation": DilatedSource,
     "sine": SineSource,
     "sequential": SequentialSource,
     "saw": SawSource,

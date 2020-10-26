@@ -6,10 +6,11 @@ from transforms.Transform import Transform
 
 class TransformedSource(Source):
     def __init__(self, child: Source, transforms: List[Transform]):
+        Source.__init__(self)
         self.child = child
         self.transforms = transforms
 
-    def get_buffer(self, fs):
+    def get_buffer(self, fs, start, end):
         buffer = self.child.get_buffer(fs)
         for transform in self.transforms:
             transform.apply(buffer)

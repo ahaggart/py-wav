@@ -5,7 +5,7 @@ from sources.Source import Source
 
 
 def play_from_source(root: Source, fs: int):
-    buffer = root.get_buffer(fs)
+    buffer = root.get_buffer(fs, 0, root.get_duration(fs))
 
     # Ensure that highest value is in 16-bit range
     audio = buffer * (2**15 - 1) / np.max(np.abs(buffer))

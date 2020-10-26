@@ -1,6 +1,6 @@
 {
-    "type": "speed",
-    "modifier": 2.0,
+    "type": "dilation",
+    "factor": 0.5,
     "child": {
         "type": "sequential",
         "children": [
