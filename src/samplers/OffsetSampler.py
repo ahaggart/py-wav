@@ -7,5 +7,5 @@ class OffsetSampler(Sampler):
         self.offset = offset
 
     def sample(self, source, fs, start, end):
-        offset_fs = int(self.offset*fs)
+        offset_fs = int(self.offset*self.parent.get_fs())
         return self.parent.sample(source, fs, start+offset_fs, end+offset_fs)

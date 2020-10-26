@@ -1,10 +1,12 @@
 import numpy as np
 import simpleaudio as sa
 
+from samplers.Sampler import RootSampler
 from sources.Source import Source
 
 
 def play_from_source(root: Source, fs: int):
+    root.set_sampler(RootSampler(fs))
     buffer = root.get_buffer(fs, 0, root.get_duration(fs))
 
     # Ensure that highest value is in 16-bit range
