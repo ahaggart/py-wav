@@ -1,4 +1,5 @@
 import json
+from json import JSONEncoder
 from typing import Dict, Type
 
 from sources.Source import Source
@@ -6,6 +7,16 @@ from sources.Source import Source
 
 def tree_print(msg: str, depth: int):
     print("-" * depth + msg)
+
+
+def save(source: Source, file: str):
+    with open(file, 'w') as f:
+        json.dump(source, f, indent=2, cls=SourceEncoder)
+
+
+class SourceEncoder(JSONEncoder):
+    def default(self, o):
+        return o.get_params()
 
 
 class SourceParser:
@@ -36,9 +47,13 @@ class SourceParser:
 
         clazz = self.registry[type_name]
 
-        unpacked = {}
+        unpacked = {"type": type_name}
 
         for key in raw:
             unpacked[key] = self.unpack(raw[key], depth=depth+1, name=key)
 
-        return clazz(**unpacked)
+        try:
+            return clazz(**unpacked)
+        except TypeError:
+            print(f"Error parsing {type_name}")
+            raise

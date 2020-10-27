@@ -1,10 +1,13 @@
+from typing import Dict
+
 from samplers.Sampler import Sampler
 from sources.Source import Source
 
 
 class DilatedSource(Source):
-    def __init__(self, factor: float, child: Source):
+    def __init__(self, factor: float, child: Source, **kwargs):
         Source.__init__(self)
+        self.create_params()
         self.factor = float(factor)
         self.child = child
 
@@ -21,3 +24,7 @@ class DilatedSource(Source):
     def set_sampler(self, sampler: Sampler):
         super().set_sampler(sampler)
         self.child.set_sampler(sampler)
+
+    def to_dict(self) -> Dict:
+        params = self.params.copy()
+        params.update(child=self.child.to_dict())

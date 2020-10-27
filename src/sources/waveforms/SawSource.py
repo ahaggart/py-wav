@@ -3,8 +3,9 @@ from sources.Source import Source
 
 
 class SawSource(Source):
-    def __init__(self, freq, seconds):
+    def __init__(self, freq, seconds, **kwargs):
         Source.__init__(self)
+        self.create_params()
         self.freq = freq
         self.per = 1.0 / float(self.freq)
         self.seconds = seconds

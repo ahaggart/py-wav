@@ -4,7 +4,7 @@
     "child": {
         "type": "sequential",
         "children": [
-            {"type": "note", "output": "saw", "name": "B", "seconds": 0.5},
+            {"type": "note", "output": "saw", "name": "B", "seconds": 0.5, "bogus":  "bogus"},
             {"type": "note", "output": "saw", "name": "C#", "seconds": 0.5},
             {"type": "note", "output": "saw", "name": "D", "seconds": 0.5},
             {"type": "note", "output": "saw", "name": "E", "seconds": 0.5},

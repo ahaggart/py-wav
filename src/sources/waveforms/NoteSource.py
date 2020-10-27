@@ -24,8 +24,9 @@ notes = {
 class NoteSource(Source): 
     sources = {}  # to be populated in __init__.py
    
-    def __init__(self, name: str, output: str, seconds: float, octave: int=0):
+    def __init__(self, name: str, output: str, seconds: float, octave: int = 0, **kwargs):
         Source.__init__(self)
+        self.create_params()
         freq = notes[name]*(2**octave)
         clazz = NoteSource.sources[output]
         self.source = clazz(freq=freq, seconds=seconds)

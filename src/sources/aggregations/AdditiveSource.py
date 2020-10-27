@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import numpy as np
 
@@ -8,8 +8,11 @@ from sources.Source import Source
 
 
 class AdditiveSource(Source):
+    name = "additive"
+
     def __init__(self, children: List[Tuple[float, Source]] = None):
         Source.__init__(self)
+        self.create_params()
         self.children = children if children is not None else []
 
     def with_source(self, offset: float, source: Source):
