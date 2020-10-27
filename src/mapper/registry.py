@@ -8,6 +8,7 @@ from sources.transform.TransformedSource import TransformedSource
 from sources.waveforms.SineSource import SineSource
 from sources.waveforms.NoteSource import NoteSource
 from sources.waveforms.SawSource import SawSource
+from transforms.FourierTransform import FourierTransform
 
 __registered_sources: Dict[str, Type[Mappable]] = {
     "additive": AdditiveSource,
@@ -17,6 +18,7 @@ __registered_sources: Dict[str, Type[Mappable]] = {
     "saw": SawSource,
     "note": NoteSource,
     "transformed": TransformedSource,
+    "fourier": FourierTransform,
 }
 
 

@@ -10,7 +10,7 @@ class TransformedSource(Source):
         Source.__init__(self)
         self.create_params()
         self.child = child
-        self.transforms = [FourierTransform()]
+        self.transforms = transforms
 
     def get_buffer(self, fs, start, end):
         buffer = self.child.get_buffer(fs, start, end)

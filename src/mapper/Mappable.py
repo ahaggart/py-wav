@@ -1,4 +1,5 @@
 import inspect
+import uuid
 from typing import Dict
 
 
@@ -14,6 +15,9 @@ class Mappable:
         self.params = {arg: arginfo.locals[arg] for arg in arginfo.args if arg != 'self'}
         if arginfo.keywords is not None:
             self.params.update(arginfo.locals[arginfo.keywords])
+
+        if "uuid" not in self.params:
+            self.params["uuid"] = str(uuid.uuid4())
 
     def get_params(self) -> Dict:
         return self.params.copy()

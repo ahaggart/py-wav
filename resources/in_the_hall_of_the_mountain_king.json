@@ -3,7 +3,7 @@
     "factor": 0.5,
     "child": {
         "type": "transformed",
-        "transforms": [],
+        "transforms": [{"type":  "fourier"}],
         "child": {
             "type": "sequential",
             "children": [
@@ -11,8 +11,7 @@
                     "type": "note",
                     "output": "saw",
                     "name": "B",
-                    "seconds": 0.5,
-                    "bogus": "bogus"
+                    "seconds": 0.5
                 },
                 {
                     "type": "note",
