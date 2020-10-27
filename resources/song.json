@@ -2,34 +2,172 @@
     "type": "dilation",
     "factor": 0.5,
     "child": {
-        "type": "sequential",
-        "children": [
-            {"type": "note", "output": "saw", "name": "B", "seconds": 0.5, "bogus":  "bogus"},
-            {"type": "note", "output": "saw", "name": "C#", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "D", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "E", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "F#", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "D", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "F#", "seconds": 1},
-            {"type": "note", "output": "saw", "name": "F", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "C#", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "F", "seconds": 1},
-            {"type": "note", "output": "saw", "name": "E", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "C", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "E", "seconds": 1},
-            {"type": "note", "output": "saw", "name": "B", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "C#", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "D", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "E", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "F#", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "D", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "F#", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "B", "seconds": 0.5, "octave": 1},
-            {"type": "note", "output": "saw", "name": "A", "seconds": 0.5, "octave": 1},
-            {"type": "note", "output": "saw", "name": "F#", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "D", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "F#", "seconds": 0.5},
-            {"type": "note", "output": "saw", "name": "A", "seconds": 2, "octave": 1}
-        ]
+        "type": "transformed",
+        "transforms": [],
+        "child": {
+            "type": "sequential",
+            "children": [
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "B",
+                    "seconds": 0.5,
+                    "bogus": "bogus"
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "C#",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "D",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "E",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "F#",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "D",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "F#",
+                    "seconds": 1
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "F",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "C#",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "F",
+                    "seconds": 1
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "E",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "C",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "E",
+                    "seconds": 1
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "B",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "C#",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "D",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "E",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "F#",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "D",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "F#",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "B",
+                    "seconds": 0.5,
+                    "octave": 1
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "A",
+                    "seconds": 0.5,
+                    "octave": 1
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "F#",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "D",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "F#",
+                    "seconds": 0.5
+                },
+                {
+                    "type": "note",
+                    "output": "saw",
+                    "name": "A",
+                    "seconds": 2,
+                    "octave": 1
+                }
+            ]
+        }
     }
 }

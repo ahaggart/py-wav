@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from mapper import SourceParser, save
+from mapper.mapper import SourceParser, save
 from output import play_from_source
-from sources.registry import get_registry
+from mapper.registry import get_registry
 
 
 if __name__ == "__main__":

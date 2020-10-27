@@ -1,6 +1,7 @@
 from typing import List
 
 from sources.Source import Source
+from transforms.FourierTransform import FourierTransform
 from transforms.Transform import Transform
 
 
@@ -9,12 +10,12 @@ class TransformedSource(Source):
         Source.__init__(self)
         self.create_params()
         self.child = child
-        self.transforms = transforms
+        self.transforms = [FourierTransform()]
 
     def get_buffer(self, fs, start, end):
-        buffer = self.child.get_buffer(fs)
+        buffer = self.child.get_buffer(fs, start, end)
         for transform in self.transforms:
-            transform.apply(buffer)
+            buffer = transform.apply(fs, buffer)
         return buffer
 
     def get_duration(self, fs):

@@ -2,14 +2,14 @@ import json
 from json import JSONEncoder
 from typing import Dict, Type
 
-from sources.Source import Source
+from mapper.Mappable import Mappable
 
 
 def tree_print(msg: str, depth: int):
     print("-" * depth + msg)
 
 
-def save(source: Source, file: str):
+def save(source: Mappable, file: str):
     with open(file, 'w') as f:
         json.dump(source, f, indent=2, cls=SourceEncoder)
 
@@ -20,7 +20,7 @@ class SourceEncoder(JSONEncoder):
 
 
 class SourceParser:
-    def __init__(self, registry: Dict[str, Type[Source]]):
+    def __init__(self, registry: Dict[str, Type[Mappable]]):
         self.registry = registry
 
     def parse(self, file):
