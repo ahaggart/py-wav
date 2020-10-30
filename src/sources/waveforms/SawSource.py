@@ -13,7 +13,7 @@ class SawSource(Source):
     def get_buffer(self, fs, start, end):
         # Generate array with seconds*sample_rate steps, ranging between 0 and seconds
         t = np.linspace(0, self.seconds*fs, int(self.seconds * fs), False)
-        note = np.divide(np.mod(t, int(self.per*fs)), self.per*fs)
+        note = np.divide(np.mod(t, int(self.per*fs)), self.per*fs) * 2 - 1
         return note[start:end]
 
     def get_duration(self, fs):

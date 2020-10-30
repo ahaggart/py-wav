@@ -1,0 +1,17 @@
+{
+  "type": "transformed",
+  "transforms": [{
+    "type": "fourier",
+    "filters": [{
+      "type": "beading",
+      "degrees": [2]
+    }]
+  }],
+  "child": {
+    "type": "additive",
+    "children": [
+      [0, {"type": "sine", "seconds": 4, "freq": 220}],
+      [0, {"type": "sine", "seconds": 4, "freq": 220}]
+    ]
+  }
+}

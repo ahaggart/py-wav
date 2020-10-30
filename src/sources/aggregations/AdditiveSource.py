@@ -10,7 +10,7 @@ from sources.Source import Source
 class AdditiveSource(Source):
     name = "additive"
 
-    def __init__(self, children: List[Tuple[float, Source]] = None):
+    def __init__(self, children: List[Tuple[float, Source]] = None, **kwargs):
         Source.__init__(self)
         self.create_params()
         self.children = children if children is not None else []

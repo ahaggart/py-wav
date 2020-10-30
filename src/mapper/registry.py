@@ -5,10 +5,13 @@ from sources.aggregations.SequentialSource import SequentialSource
 from sources.aggregations.AdditiveSource import AdditiveSource
 from sources.transform.DilatedSource import DilatedSource
 from sources.transform.TransformedSource import TransformedSource
+from sources.waveforms.BezierSource import BezierSource
 from sources.waveforms.SineSource import SineSource
 from sources.waveforms.NoteSource import NoteSource
 from sources.waveforms.SawSource import SawSource
 from transforms.FourierTransform import FourierTransform
+from transforms.filters.BeadingFilter import BeadingFilter
+from transforms.filters.HarmonicFilter import HarmonicFilter
 
 __registered_sources: Dict[str, Type[Mappable]] = {
     "additive": AdditiveSource,
@@ -19,6 +22,9 @@ __registered_sources: Dict[str, Type[Mappable]] = {
     "note": NoteSource,
     "transformed": TransformedSource,
     "fourier": FourierTransform,
+    "bezier": BezierSource,
+    "harmonic": HarmonicFilter,
+    "beading": BeadingFilter,
 }
 
 

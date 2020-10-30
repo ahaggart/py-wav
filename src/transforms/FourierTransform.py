@@ -1,6 +1,9 @@
+from typing import List
+
 import numpy as np
 
 from transforms.Transform import Transform
+from transforms.filters.Filter import Filter
 
 
 def apply_filter(dft, filter):
@@ -10,19 +13,22 @@ def apply_filter(dft, filter):
 
 
 class FourierTransform(Transform):
-    def __init__(self, **kwargs):
+    def __init__(self, filters: List[Filter], **kwargs):
         Transform.__init__(self)
         self.create_params()
+        self.filters = filters
+
+    def split_dft(self, dft):
+        n = len(dft)
+        return np.concatenate([dft[int(n / 2):], dft[:int(n / 2)]])
+
+    def get_dft(self, fs, buffer):
+        return self.split_dft(np.fft.fft(buffer) / fs)
 
     def apply(self, fs, buffer):
-        n = len(buffer)
-        dft = np.fft.fft(buffer)
+        dft = self.get_dft(fs, buffer)
 
-        filter = np.zeros(n)
-        filter.fill(0.2)
-        modifier = 16
-        half_modifier = int(modifier / 2)
-        filter[(half_modifier-1)*int(n/modifier):(half_modifier+1)*int(n/modifier)] = 1
-        dft_filtered = apply_filter(dft, filter)
+        for f in self.filters:
+            dft = f.apply(fs, dft)
 
-        return np.abs(np.fft.ifft(dft_filtered))
+        return np.real(np.fft.ifft(self.split_dft(dft)))
