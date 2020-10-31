@@ -1,16 +1,33 @@
 {
   "type": "transformed",
-  "transforms": [{
-    "type": "fourier",
-    "intensity": {
-      "type": "p_sine",
-      "freq": 55
+  "transforms": [
+    {
+      "type": "fourier",
+      "intensity": {
+        "type": "p_source",
+        "source": {
+          "type": "saw",
+          "freq": 55,
+          "seconds": 0
+        }
+      },
+      "filters": [{
+        "type": "harmonic",
+        "harmonics": [2,3,5,7,11,13,17,19]
+      }]
     },
-    "filters": [{
-      "type": "harmonic",
-      "harmonics": [2,3,5,7,11,13,17,19]
-    }]
-  }],
+    {
+      "type": "t_scaling",
+      "intensity": {
+        "type": "p_source",
+        "source": {
+          "type": "sine",
+          "freq": 3,
+          "seconds": 0
+        }
+      }
+    }
+  ],
   "child": {
     "type": "additive",
     "children": [

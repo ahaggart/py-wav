@@ -8,7 +8,7 @@ from mapper.Mappable import Mappable
 def parametrize(p: Any):
     if isinstance(p, Parameter):
         return p
-    elif isinstance(p, int):
+    elif isinstance(p, (int, float)):
         return ConstantParameter(p)
 
     raise TypeError

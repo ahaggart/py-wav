@@ -12,9 +12,9 @@ class SineSource(Source):
 
     def get_buffer(self, fs, start, end):
         # Generate array with seconds*sample_rate steps, ranging between 0 and seconds
-        t = np.linspace(0, self.seconds, int(self.seconds * fs), False)
-        note = np.sin(self.freq * t * 2 * np.pi)
-        return note[start:end]
+        dur = float(end-start) / fs
+        t = np.linspace(0, 2*np.pi*self.freq*dur, end-start)
+        return np.sin(t+float(start)/fs)
 
     def get_duration(self, fs):
         return int(self.seconds * fs)

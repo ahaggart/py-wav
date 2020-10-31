@@ -1,6 +1,6 @@
 from typing import Type, Dict
 
-from parameters.SineParameter import SineParameter
+from parameters.SourceParameter import SourceParameter
 from parameters.SlidingParameter import SlidingParameter
 from mapper.Mappable import Mappable
 from sources.aggregations.SequentialSource import SequentialSource
@@ -12,6 +12,7 @@ from sources.waveforms.SineSource import SineSource
 from sources.waveforms.NoteSource import NoteSource
 from sources.waveforms.SawSource import SawSource
 from transforms.FourierTransform import FourierTransform
+from transforms.ScalingTransform import ScalingTransform
 from transforms.filters.BeadingFilter import BeadingFilter
 from transforms.filters.HarmonicFilter import HarmonicFilter
 
@@ -23,12 +24,17 @@ __registered_sources: Dict[str, Type[Mappable]] = {
     "saw": SawSource,
     "note": NoteSource,
     "transformed": TransformedSource,
-    "fourier": FourierTransform,
     "bezier": BezierSource,
+
+    "fourier": FourierTransform,
+
+    "t_scaling": ScalingTransform,
+
     "harmonic": HarmonicFilter,
     "beading": BeadingFilter,
+
     "p_sliding": SlidingParameter,
-    "p_sine": SineParameter,
+    "p_source": SourceParameter,
 }
 
 
