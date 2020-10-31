@@ -2,6 +2,10 @@
   "type": "transformed",
   "transforms": [{
     "type": "fourier",
+    "intensity": {
+      "type": "p_sine",
+      "freq": 55
+    },
     "filters": [{
       "type": "harmonic",
       "harmonics": [2,3,5,7,11,13,17,19]

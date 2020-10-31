@@ -2,21 +2,17 @@ from typing import List
 
 import numpy as np
 
+from parameters.Parameter import parametrize
 from transforms.Transform import Transform
 from transforms.filters.Filter import Filter
 
 
-def apply_filter(dft, filter):
-    n = len(dft)
-    filter_split = np.concatenate([filter[int(n / 2):], filter[:int(n / 2)]])
-    return dft * filter_split
-
-
 class FourierTransform(Transform):
-    def __init__(self, filters: List[Filter], **kwargs):
+    def __init__(self, filters: List[Filter], intensity=1, **kwargs):
         Transform.__init__(self)
-        self.create_params()
+        self.create_mapping()
         self.filters = filters
+        self.intensity = parametrize(intensity)
 
     def split_dft(self, dft):
         n = len(dft)
@@ -31,4 +27,10 @@ class FourierTransform(Transform):
         for f in self.filters:
             dft = f.apply(fs, dft)
 
-        return np.real(np.fft.ifft(self.split_dft(dft)))
+        result = np.real(np.fft.ifft(self.split_dft(dft))) * fs
+
+        result /= np.max(np.abs(result))
+
+        intensity = self.intensity.sample(fs, 0, len(buffer))
+
+        return result * intensity + buffer * (1-intensity)

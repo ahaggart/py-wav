@@ -8,7 +8,7 @@ from transforms.filters.Filter import Filter
 class BeadingFilter(Filter):
     def __init__(self, frequencies: List[int], **kwargs):
         Filter.__init__(self)
-        self.create_params()
+        self.create_mapping()
 
         self.frequencies = frequencies
         self.noise_floor = 0.1

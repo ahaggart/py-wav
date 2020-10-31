@@ -8,7 +8,7 @@ from samplers.Sampler import Sampler
 class Source(Mappable):
     def __init__(self):
         Mappable.__init__(self)
-        self.create_params()
+        self.create_mapping()
         self.sampler = None
 
     def set_sampler(self, sampler: Sampler):

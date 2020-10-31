@@ -1,5 +1,7 @@
 from typing import Type, Dict
 
+from parameters.SineParameter import SineParameter
+from parameters.SlidingParameter import SlidingParameter
 from mapper.Mappable import Mappable
 from sources.aggregations.SequentialSource import SequentialSource
 from sources.aggregations.AdditiveSource import AdditiveSource
@@ -25,6 +27,8 @@ __registered_sources: Dict[str, Type[Mappable]] = {
     "bezier": BezierSource,
     "harmonic": HarmonicFilter,
     "beading": BeadingFilter,
+    "p_sliding": SlidingParameter,
+    "p_sine": SineParameter,
 }
 
 
