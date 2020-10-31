@@ -3,8 +3,8 @@
   "transforms": [{
     "type": "fourier",
     "filters": [{
-      "type": "beading",
-      "degrees": [2]
+      "type": "harmonic",
+      "harmonics": [2,3,5,7,11,13,17,19]
     }]
   }],
   "child": {

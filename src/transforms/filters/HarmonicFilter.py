@@ -23,8 +23,6 @@ class HarmonicFilter(Filter):
             # indices = np.concatenate([bases[0], bases[0] + 1, bases[0] - 1])
             component = np.zeros(n, dtype='complex128')
             component[indices] = buffer[bases]
-            component[indices+3] = buffer[bases]
-            component[indices-3] = buffer[bases]
             buf = buf + component / harmonic
         return buf
 
