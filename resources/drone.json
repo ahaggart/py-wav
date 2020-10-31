@@ -6,7 +6,7 @@
       "intensity": {
         "type": "p_source",
         "source": {
-          "type": "saw",
+          "type": "sine",
           "freq": 55,
           "seconds": 0
         }
@@ -21,8 +21,8 @@
       "intensity": {
         "type": "p_source",
         "source": {
-          "type": "sine",
-          "freq": 3,
+          "type": "saw",
+          "freq": 6,
           "seconds": 0
         }
       }
@@ -31,8 +31,8 @@
   "child": {
     "type": "additive",
     "children": [
-      [0, {"type": "sine", "seconds": 4, "freq": 220}],
-      [0, {"type": "sine", "seconds": 4, "freq": 220}]
+      [0, {"type": "sine", "seconds": 2, "freq": 220}],
+      [0, {"type": "sine", "seconds": 2, "freq": 220}]
     ]
   }
 }

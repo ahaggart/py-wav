@@ -10,7 +10,7 @@ def play_from_source(root: Source, fs: int):
     buffer = root.get_buffer(fs, 0, root.get_duration(fs))
 
     # Ensure that highest value is in 16-bit range
-    audio = buffer * (2**15 - 1) / np.max(np.abs(buffer))
+    audio = buffer / np.max(np.abs(buffer)) * (2**15 - 1)
 
     # Convert to 16-bit data
     audio = audio.astype(np.int16)

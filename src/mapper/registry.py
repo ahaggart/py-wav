@@ -3,6 +3,7 @@ from typing import Type, Dict
 from parameters.SourceParameter import SourceParameter
 from parameters.SlidingParameter import SlidingParameter
 from mapper.Mappable import Mappable
+from sources.WavSource import WavSource
 from sources.aggregations.SequentialSource import SequentialSource
 from sources.aggregations.AdditiveSource import AdditiveSource
 from sources.transform.DilatedSource import DilatedSource
@@ -25,6 +26,8 @@ __registered_sources: Dict[str, Type[Mappable]] = {
     "note": NoteSource,
     "transformed": TransformedSource,
     "bezier": BezierSource,
+
+    "s_wav": WavSource,
 
     "fourier": FourierTransform,
 

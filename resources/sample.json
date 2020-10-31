@@ -1,0 +1,20 @@
+{
+  "type": "transformed",
+  "transforms": [
+    {
+      "type": "fourier",
+      "intensity": 0,
+      "filters": [{
+        "type": "harmonic",
+        "noise_floor": 0.1,
+        "harmonics": [2,3,5,7,11,13,17,19]
+      }]
+    }
+  ],
+  "child": {
+    "type": "additive",
+    "children": [
+      [0, {"type": "s_wav", "file": "resources/wav/moo.wav"}]
+    ]
+  }
+}
