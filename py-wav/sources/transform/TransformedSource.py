@@ -1,7 +1,6 @@
 from typing import List
 
 from sources.Source import Source
-from transforms.FourierTransform import FourierTransform
 from transforms.Transform import Transform
 
 

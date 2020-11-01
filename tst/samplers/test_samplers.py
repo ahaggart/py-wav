@@ -14,22 +14,22 @@ class SamplerTest(unittest.TestCase):
 
     def test_sampling(self):
         sampler = Sampler(self.root_sampler)
-        sampler.sample(self.test_source, self.fs, 0, 5)
+        sampler.sample_out(self.test_source, self.fs, 0, 5)
         self.test_source.get_buffer.assert_called_once_with(self.fs, 0, 5)
 
     def test_sampling_offset(self):
         sampler = Sampler(self.root_sampler)
-        sampler.sample(self.test_source, self.fs, 1, 10)
+        sampler.sample_out(self.test_source, self.fs, 1, 10)
         self.test_source.get_buffer.assert_called_once_with(self.fs, 4, 14)
 
     def test_dilated_sampling(self):
         sampler = DilatedSampler(0.5, self.root_sampler)
-        sampler.sample(self.test_source, self.fs, 2, 5)
+        sampler.sample_out(self.test_source, self.fs, 2, 5)
         self.test_source.get_buffer.assert_called_once_with(self.fs, 4, 9)
 
     def test_offset_sampling(self):
         sampler = OffsetSampler(1, self.root_sampler)
-        sampler.sample(self.test_source, self.fs, 0, 5)
+        sampler.sample_out(self.test_source, self.fs, 0, 5)
         self.test_source.get_buffer.assert_called_once_with(self.fs, 4, 9)
 
 
@@ -47,12 +47,12 @@ class CompoundSamplerTest(unittest.TestCase):
         """
         fs = 2
         sampler = DilatedSampler(0.5, OffsetSampler(3, self.root_sampler))
-        sampler.sample(self.test_source, fs, 2, 6)
+        sampler.sample_out(self.test_source, fs, 2, 6)
         self.test_source.get_buffer.assert_called_once_with(fs, 8, 14)
 
     def test_dilated_offset_dilated(self):
         fs = 4
         sampler = DilatedSampler(0.5, OffsetSampler(2, DilatedSampler(0.5, self.root_sampler)))
-        sampler.sample(self.test_source, fs, 2, 8)
+        sampler.sample_out(self.test_source, fs, 2, 8)
         self.test_source.get_buffer.assert_called_once_with(fs, 6, 14)
 

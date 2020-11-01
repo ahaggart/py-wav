@@ -1,5 +1,3 @@
-from typing import Dict
-
 from samplers.Sampler import Sampler
 from sources.Source import Source
 

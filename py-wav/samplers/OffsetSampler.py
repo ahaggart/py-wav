@@ -7,5 +7,5 @@ class OffsetSampler(Sampler):
         Sampler.__init__(self, parent)
         self.offset = offset
 
-    def sample(self, source, fs, offset: Seconds, duration: Frames):
-        return self.parent.sample(source, fs, offset+self.offset, duration)
+    def sample_out(self, source, fs, offset: Seconds, duration: Frames):
+        return self.parent.sample_out(source, fs, offset + self.offset, duration)

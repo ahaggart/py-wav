@@ -7,5 +7,5 @@ class DilatedSampler(Sampler):
         Sampler.__init__(self, parent)
         self.factor = float(factor)
 
-    def sample(self, source, fs, offset: Seconds, duration: Frames):
-        return self.parent.sample(source, fs, self.factor * offset, duration)
+    def sample_out(self, source, fs, offset: Seconds, duration: Frames):
+        return self.parent.sample_out(source, fs, self.factor * offset, duration)

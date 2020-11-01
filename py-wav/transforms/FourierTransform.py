@@ -31,6 +31,6 @@ class FourierTransform(Transform):
 
         result /= np.max(np.abs(result))
 
-        intensity = self.intensity.sample(fs, 0, len(buffer))
+        intensity = self.intensity.sample_out(fs, 0, len(buffer))
 
         return result * intensity + buffer * (1-intensity)
