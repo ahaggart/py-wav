@@ -24,7 +24,3 @@ class DilatedSource(Source):
     def set_sampler(self, sampler: Sampler):
         super().set_sampler(sampler)
         self.child.set_sampler(sampler)
-
-    def to_dict(self) -> Dict:
-        params = self.mapping.copy()
-        params.update(child=self.child.to_dict())

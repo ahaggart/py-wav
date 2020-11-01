@@ -1,4 +1,5 @@
 from samplers.Sampler import Sampler
+from custom_types import Seconds, Frames
 
 
 class DilatedSampler(Sampler):
@@ -6,5 +7,5 @@ class DilatedSampler(Sampler):
         Sampler.__init__(self, parent)
         self.factor = float(factor)
 
-    def get_fs(self):
-        return int(self.factor*self.parent.get_fs())
+    def sample(self, source, fs, offset: Seconds, duration: Frames):
+        return self.parent.sample(source, fs, self.factor * offset, duration)

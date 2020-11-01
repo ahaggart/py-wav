@@ -11,7 +11,7 @@ def tree_print(msg: str, depth: int):
 
 def save(source: Mappable, file: str):
     with open(file, 'w') as f:
-        json.dump(source, f, indent=2, cls=SourceEncoder)
+        json.dump(source, f, cls=SourceEncoder)
 
 
 class SourceEncoder(JSONEncoder):
