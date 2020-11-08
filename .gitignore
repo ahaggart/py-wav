@@ -5,6 +5,8 @@ out/
 
 resources/wav/*.wav
 
+web/node_modules/
+
 .DS_STORE
 
 # Byte-compiled / optimized / DLL files
