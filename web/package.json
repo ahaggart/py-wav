@@ -2,13 +2,14 @@
   "name": "sounds",
   "version": "1.0.0",
   "description": "A meager attempt at a DAW.",
-  "main": "index.js",
+  "main": "index.ts",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "build": "webpack",
+    "start": "webpack serve"
   },
   "repository": {
     "type": "git",
@@ -22,10 +23,14 @@
   },
   "homepage": "https://github.com/ahaggart/py-wav#readme",
   "devDependencies": {
+    "ts-loader": "^8.0.11",
+    "typescript": "^4.0.5",
     "webpack": "^5.4.0",
-    "webpack-cli": "^4.2.0"
+    "webpack-cli": "^4.2.0",
+    "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
+    "@types/jquery": "^3.5.4",
     "jquery": "^3.5.1"
   }
 }
