@@ -1,3 +1,5 @@
+import $ from 'jquery'
+
 console.log("hello world")
 
 $(document).ready(main);

@@ -1,0 +1,31 @@
+{
+  "name": "sounds",
+  "version": "1.0.0",
+  "description": "A meager attempt at a DAW.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahaggart/py-wav.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ahaggart/py-wav/issues"
+  },
+  "homepage": "https://github.com/ahaggart/py-wav#readme",
+  "devDependencies": {
+    "webpack": "^5.4.0",
+    "webpack-cli": "^4.2.0"
+  },
+  "dependencies": {
+    "jquery": "^3.5.1"
+  }
+}
