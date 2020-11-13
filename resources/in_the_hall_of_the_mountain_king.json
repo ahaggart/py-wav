@@ -3,7 +3,7 @@
     "factor": 0.5,
     "child": {
         "type": "transformed",
-        "transforms": [{"type":  "fourier"}],
+        "transforms": [],
         "child": {
             "type": "sequential",
             "children": [

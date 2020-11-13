@@ -1,12 +1,29 @@
-import { GConstructor } from './util';
-import { TransformedSource } from '../sources/TransformedSource';
+import { Mappable, MappingBase } from './Mappable';
+import { WithChild, WithChildren } from './TraversalMixins';
 
 type WithType = {type: string};
 
-const registry: {[name: string]: any} = {
-    "transformed": TransformedSource,
+export const registry: {[name: string]: MappingBase} = {
+    "transformed": WithChildren(WithChild(Mappable), "transforms"),
+    "additive": WithChildren(Mappable, "children", arr => arr[1]),
+    "dilation": WithChild(Mappable),
+    "sine": Mappable,
+    "sequential": WithChildren(Mappable),
+    "saw": Mappable,
+    "note": Mappable,
+    "bezier": Mappable,
+
+    "s_wav": Mappable,
+
+    "fourier": Mappable,
+
+    "t_scaling": Mappable,
+
+    "harmonic": Mappable,
+    "beading": Mappable,
+
+    "p_sliding": Mappable,
+    "p_source": Mappable,
 }
 
-export function construct(data: WithType): any {
-    return registry[data.type](data)
-}
+export type Registry = {[name: string]: MappingBase};
