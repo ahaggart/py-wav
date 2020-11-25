@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 
+from SourceState import SourceState
 from samplers.OffsetSampler import OffsetSampler
 from samplers.Sampler import Sampler
 from sources.Source import Source
@@ -33,3 +34,10 @@ class SequentialSource(Source):
         for child in self.children:
             child.set_sampler(OffsetSampler(acc, sampler))
             acc += float(child.get_duration(fs)) / fs
+
+    def set_state(self, state: SourceState):
+        super().set_state(state)
+        acc = 0
+        for child in self.children:
+            child.set_state(self.state.with_offset(acc))
+            acc += float(child.get_duration(44100)) / 44100

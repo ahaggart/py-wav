@@ -1,9 +1,9 @@
-from mapper.Mappable import Mappable
+from core.Stateful import Stateful
 
 
-class Transform(Mappable):
+class Transform(Stateful):
     def __init__(self):
-        Mappable.__init__(self)
+        Stateful.__init__(self)
         self.create_mapping()
 
     def apply(self, fs, buffer):

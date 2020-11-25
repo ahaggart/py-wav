@@ -2,6 +2,7 @@ from typing import Any
 
 import numpy as np
 
+from core.Stateful import Stateful
 from mapper.Mappable import Mappable
 
 
@@ -14,9 +15,9 @@ def parametrize(p: Any):
     raise TypeError
 
 
-class Parameter(Mappable):
+class Parameter(Stateful):
     def __init__(self):
-        Mappable.__init__(self)
+        Stateful.__init__(self)
         self.create_mapping()
 
     def sample(self, fs, start, end):

@@ -1,0 +1,8 @@
+[
+  {
+    "type": "w_sine",
+    "fields": {
+      "freq": "float"
+    }
+  }
+]

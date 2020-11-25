@@ -14,7 +14,7 @@
   "child": {
     "type": "additive",
     "children": [
-      [0, {"type": "s_wav", "file": "resources/wav/moo.wav"}]
+      [0, {"type": "s_wav", "file": "resources/wav/please_turn_off_the_air.wav"}]
     ]
   }
 }

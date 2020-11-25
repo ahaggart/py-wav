@@ -14,3 +14,6 @@ class SourceParameter(Parameter):
         signal = self.source.get_buffer(fs, start, end)
         normalized = (signal - np.min(signal)) / np.ptp(signal)
         return normalized
+
+    def sample_out(self, fs, start, end):
+        return self.sample(fs, start, end)

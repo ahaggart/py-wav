@@ -2,6 +2,7 @@ from typing import List, Tuple
 
 import numpy as np
 
+from SourceState import SourceState
 from samplers.OffsetSampler import OffsetSampler
 from samplers.Sampler import Sampler
 from sources.Source import Source
@@ -34,3 +35,8 @@ class AdditiveSource(Source):
         super().set_sampler(sampler)
         for offset, child in self.children:
             child.set_sampler(OffsetSampler(offset, sampler))
+
+    def set_state(self, state: SourceState):
+        super().set_state(state)
+        for offset, child in self.children:
+            child.set_state(self.state.with_offset(offset))

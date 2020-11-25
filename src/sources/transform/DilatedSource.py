@@ -1,3 +1,4 @@
+from SourceState import SourceState
 from samplers.Sampler import Sampler
 from sources.Source import Source
 
@@ -22,3 +23,7 @@ class DilatedSource(Source):
     def set_sampler(self, sampler: Sampler):
         super().set_sampler(sampler)
         self.child.set_sampler(sampler)
+
+    def set_state(self, state: SourceState):
+        super().set_state(state)
+        self.child.set_state(self.state.with_dilation(self.factor))

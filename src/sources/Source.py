@@ -1,12 +1,14 @@
-from mapper.Mappable import Mappable
+from SourceState import SourceState
+from core.Stateful import Stateful
 from samplers.Sampler import Sampler
 
 
-class Source(Mappable):
+class Source(Stateful):
     def __init__(self):
-        Mappable.__init__(self)
+        Stateful.__init__(self)
         self.create_mapping()
         self.sampler = None
+        self.state: SourceState = None
 
     def set_sampler(self, sampler: Sampler):
         self.sampler = sampler
