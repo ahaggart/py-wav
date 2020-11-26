@@ -15,7 +15,14 @@ import matplotlib.pyplot as plt
 from sources.waveforms.SawSource import SawSource
 from sources.waveforms.SineSource import SineSource
 
-wav_source = WavSource("resources/wav/please_turn_off_the_air.wav")
+DRAW_COMPONENTS = False
+
+# human hearing: 20hz - 20khz
+MIN_FREQ = 20
+MAX_FREQ = 10000
+NUM_BANDS = 10
+
+wav_source = WavSource("resources/wav/please_turn_on_the_air.wav")
 
 wav_source.load_source()
 
@@ -30,15 +37,12 @@ fourier = FourierParameter(SourceParameter(base_source))
 
 inverse_fourier = FourierInverseParameter(fourier)
 
-# human hearing: 20hz - 20khz
-bands = np.geomspace(20, 10000, 10)
+bands = np.geomspace(MIN_FREQ, MAX_FREQ, NUM_BANDS+1)
 
 out = np.zeros(dur)
 
-fig, (ax) = plt.subplots(len(bands)-1+3, 1)
-
-ax[0].plot(base_source.get_buffer(fs, 0, dur))
-ax[1].plot(np.real(fourier.sample(fs, 0, dur)))
+envelopes = []
+components = []
 
 for i in range(0, len(bands)-1):
     lower = bands[i]
@@ -46,16 +50,27 @@ for i in range(0, len(bands)-1):
     band = BandPassParameter(lower, upper, fourier)
     inv = FourierInverseParameter(band)
     env = EnvelopeFollowingParameter(lower-1, inv)
-    carrier = SawSource((lower + upper) / 2, dur / fs)
-    # ax[i+2].plot(np.real(inv.sample(fs, 0, dur)))
+    avg_freq = (lower + upper) / 2
+    fund_freq = (np.abs(np.argmax(band.sample(fs, 0, dur)) - dur / 2)) * float(fs) / dur
+    carrier_freq = fund_freq
+    print(f"lower: {lower} upper: {upper} avg: {avg_freq} fund: {fund_freq}")
+    carrier = SineSource(carrier_freq, dur / fs)
     buf = carrier.get_buffer(fs, 0, dur) * env.sample(fs, 0, dur)
     out += buf
-    ax[i+2].plot(buf)
-    ax[i+2].plot(np.real(env.sample(fs, 0, dur)))
+    envelopes.append(env)
+    components.append(buf)
 
-ax[-1].plot(out)
+if DRAW_COMPONENTS:
+    fig, (ax) = plt.subplots(len(bands) - 1 + 3, 1)
 
-plt.show()
+    ax[0].plot(base_source.get_buffer(fs, 0, dur))
+    ax[1].plot(np.real(fourier.sample(fs, 0, dur)))
+    ax[-1].plot(out)
+
+    for i, buf, env in zip(range(len(components)), components, envelopes):
+        ax[i + 2].plot(buf)
+        ax[i + 2].plot(np.real(env.sample(fs, 0, dur)))
+    plt.show()
 
 final_source = BufferSource(out, fs)
 
