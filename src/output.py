@@ -8,10 +8,14 @@ from samplers.Sampler import RootSampler
 from sources.Source import Source
 
 
-def play_from_source(root: Source, fs: int, dur: Optional[Frames] = None):
+def play_from_source(root: Source,
+                     fs: int,
+                     start: Optional[Frames] = None,
+                     end: Optional[Frames] = None):
     root.set_sampler(RootSampler(fs))
-    dur = dur if dur is not None else root.get_duration(fs)
-    buffer = root.get_buffer(fs, 0, dur)
+    start = start if start is not None else 0
+    end = end if end is not None else root.get_duration(fs)
+    buffer = root.get_buffer(fs, start, end)
 
     # Ensure that highest value is in 16-bit range
     audio = buffer / np.max(np.abs(buffer)) * (2**15 - 1)
