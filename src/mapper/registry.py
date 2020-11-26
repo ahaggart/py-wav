@@ -1,5 +1,6 @@
 from typing import Type, Dict
 
+from parameters.FourierParameter import FourierParameter
 from parameters.SourceParameter import SourceParameter
 from parameters.SlidingParameter import SlidingParameter
 from mapper.Mappable import Mappable
@@ -38,6 +39,7 @@ __registered_sources: Dict[str, Type[Mappable]] = {
 
     "p_sliding": SlidingParameter,
     "p_source": SourceParameter,
+    "p_fourier": FourierParameter,
 }
 
 

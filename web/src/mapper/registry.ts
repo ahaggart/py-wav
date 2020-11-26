@@ -1,10 +1,11 @@
 import { Mappable, MappingBase } from './Mappable';
 import { WithChild, WithChildren } from './TraversalMixins';
+import { TransformedSource } from '../sources/TransformedSource';
 
 type WithType = {type: string};
 
 export const registry: {[name: string]: MappingBase} = {
-    "transformed": WithChildren(WithChild(Mappable), "transforms"),
+    "transformed": TransformedSource,
     "additive": WithChildren(Mappable, "children", arr => arr[1]),
     "dilation": WithChild(Mappable),
     "sine": Mappable,

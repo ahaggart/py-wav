@@ -20,5 +20,5 @@ function createElement(parent: any, data: any) {
     const root_node = mapper.construct(data)
     const renderer = new Renderer()
 
-    parent.append(renderer.render(root_node))
+    parent.append(root_node.draw())
 }

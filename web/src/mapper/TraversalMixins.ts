@@ -19,6 +19,8 @@ export function WithChildren<TBase extends MappingBase>(
     extractor: (child: any) => Mappable=e=>e
 ) {
     return class WithChildren extends Base {
+        children: Mappable[] = this.data[key];
+        
         traverse(): Mappable[] {
             return super.traverse().concat(this.data[key].map(extractor))
         }

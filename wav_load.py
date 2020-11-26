@@ -20,8 +20,11 @@ audio = audio.astype(np.int16)
 
 print(fs)
 
+plt.plot(audio)
+plt.show()
+
 # Start playback
-play_obj = sa.play_buffer(audio, 1, 2, fs)
+# play_obj = sa.play_buffer(audio, 1, 2, fs)
 
 # Wait for playback to finish before exiting
-play_obj.wait_done()
+# play_obj.wait_done()
