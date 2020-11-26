@@ -1,0 +1,26 @@
+from typing import Union
+
+from SourceState import SourceState
+from custom_types import Frames
+from parameters.Parameter import Parameter, parametrize, Parametrizable
+from sources.Source import Source
+
+
+class ScaledSource(Source):
+    def __init__(self, scale: Parametrizable, child: Source, **kwargs):
+        Source.__init__(self)
+        self.create_mapping('s_scaled')
+        self.child = child
+        self.scale = parametrize(scale)
+
+    def set_state(self, state: SourceState):
+        super().set_state(state)
+        self.child.set_state(self.state)
+
+    def get_buffer(self, fs: Frames, start: Frames, end: Frames):
+        scaling = self.scale.sample(fs, self.state.offset, start, end)
+        buf = self.child.get_buffer(fs, start, end)
+        return buf * scaling
+
+    def get_period(self, fs: Frames) -> Frames:
+        return self.child.get_period(fs)

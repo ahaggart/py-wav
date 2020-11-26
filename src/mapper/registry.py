@@ -1,6 +1,6 @@
 from typing import Type, Dict
 
-from parameters.FourierParameter import FourierParameter
+from parameters.spectral.FourierParameter import FourierParameter
 from parameters.SourceParameter import SourceParameter
 from parameters.SlidingParameter import SlidingParameter
 from mapper.Mappable import Mappable

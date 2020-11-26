@@ -10,5 +10,5 @@ class SlidingParameter(Parameter):
         self.start = start
         self.end = end
 
-    def sample(self, fs, start, end):
+    def get_buffer(self, fs, start, end):
         return np.sin(np.linspace(0, 110*np.pi, end-start))

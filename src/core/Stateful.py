@@ -7,7 +7,10 @@ class Stateful(Mappable):
     def __init__(self):
         Mappable.__init__(self)
         self.create_mapping()
-        self.state: SourceState = None
+        self.state = SourceState()
+
+    def get_state(self):
+        return self.state
 
     def set_state(self, state: SourceState):
         self.state = state.with_depth(state.depth + 1)

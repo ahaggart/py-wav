@@ -2,6 +2,7 @@ import wave
 
 import numpy as np
 
+from custom_types import Frames
 from sources.Source import Source
 
 
@@ -30,3 +31,6 @@ class WavSource(Source):
         if self.buffer is None:
             self.load_source()
         return len(self.buffer)
+
+    def get_period(self, fs: Frames) -> Frames:
+        return self.get_duration(fs)

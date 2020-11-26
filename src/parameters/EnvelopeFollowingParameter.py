@@ -3,7 +3,7 @@ from collections import deque
 import numpy as np
 from scipy.signal import hilbert
 
-from custom_types import Hz
+from custom_types import Hz, Frames
 from parameters.Parameter import Parameter
 
 
@@ -14,8 +14,14 @@ class EnvelopeFollowingParameter(Parameter):
         self.freq = freq
         self.p = p
 
-    def sample(self, fs, start, end):
-        base = self.p.sample(fs, start, end)
+    def get_state(self):
+        return self.p.get_state()
+
+    def get_period(self, fs: Frames) -> Frames:
+        return self.p.get_period(fs)
+
+    def get_buffer(self, fs, start, end):
+        base = self.p.get_buffer(fs, start, end)
         return self.env_hilbert(fs, base)
 
     def env_hilbert(self, fs, base):
@@ -23,7 +29,7 @@ class EnvelopeFollowingParameter(Parameter):
 
     def env_rolling_max(self, fs, base):
         print("start envelope")
-        window_size = int(fs / self.freq)
+        window_size = int(fs / self.freq) + 1
         dq = deque(maxlen=window_size)
 
         mins = np.zeros(len(base))

@@ -12,5 +12,5 @@ class BufferSource(Source):
     def get_buffer(self, fs: int, start: int, end: int):
         return self.buf[start:end]
 
-    def get_duration(self, fs) -> int:
-        return int(len(self.buf) * self.source_fs / fs)
+    def get_period(self, fs: Frames) -> Frames:
+        return len(self.buf) * self.source_fs / fs

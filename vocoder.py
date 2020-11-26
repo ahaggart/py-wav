@@ -1,21 +1,18 @@
-from collections import deque
-
+import matplotlib.pyplot as plt
 import numpy as np
 
+from SourceState import SourceState
 from output import play_from_source
 from parameters.BandPassParameter import BandPassParameter
 from parameters.EnvelopeFollowingParameter import EnvelopeFollowingParameter
-from parameters.FourierParameter import FourierParameter, FourierInverseParameter
 from parameters.SourceParameter import SourceParameter
-from sources.BufferSource import BufferSource
+from parameters.spectral.FourierParameter import FourierParameter, FourierInverseParameter
 from sources.WavSource import WavSource
-
-import matplotlib.pyplot as plt
-
-from sources.waveforms.SawSource import SawSource
+from sources.aggregations.AdditiveSource import AdditiveSource
+from sources.transform.ScaledSource import ScaledSource
 from sources.waveforms.SineSource import SineSource
 
-DRAW_COMPONENTS = False
+DRAW_COMPONENTS = True
 
 # human hearing: 20hz - 20khz
 MIN_FREQ = 20
@@ -39,8 +36,6 @@ inverse_fourier = FourierInverseParameter(fourier)
 
 bands = np.geomspace(MIN_FREQ, MAX_FREQ, NUM_BANDS+1)
 
-out = np.zeros(dur)
-
 envelopes = []
 components = []
 
@@ -49,29 +44,37 @@ for i in range(0, len(bands)-1):
     upper = bands[i+1]
     band = BandPassParameter(lower, upper, fourier)
     inv = FourierInverseParameter(band)
-    env = EnvelopeFollowingParameter(lower-1, inv)
+    env = EnvelopeFollowingParameter(lower, inv)
     avg_freq = (lower + upper) / 2
-    fund_freq = (np.abs(np.argmax(band.sample(fs, 0, dur)) - dur / 2)) * float(fs) / dur
+    center_idx = band.get_period(fs) / 2
+    fund_freq = (np.abs(np.argmax(band.get_buffer(fs)) - center_idx)) * float(fs) / dur
     carrier_freq = fund_freq
     print(f"lower: {lower} upper: {upper} avg: {avg_freq} fund: {fund_freq}")
     carrier = SineSource(carrier_freq, dur / fs)
-    buf = carrier.get_buffer(fs, 0, dur) * env.sample(fs, 0, dur)
-    out += buf
+    component = ScaledSource(env, carrier)
     envelopes.append(env)
-    components.append(buf)
+    components.append(component)
+
+# sum the frequency band components
+out_source = AdditiveSource(list((0, c) for c in components))
+out_source.set_state(SourceState())
 
 if DRAW_COMPONENTS:
-    fig, (ax) = plt.subplots(len(bands) - 1 + 3, 1)
-
+    num_pre_cmp = 1
+    num_cmp = len(bands) - 1
+    num_post_cmp = 1
+    num_plots = num_cmp + num_pre_cmp + num_post_cmp
+    fig, (ax) = plt.subplots(num_plots, 1)
     ax[0].plot(base_source.get_buffer(fs, 0, dur))
-    ax[1].plot(np.real(fourier.sample(fs, 0, dur)))
-    ax[-1].plot(out)
+    # ax[1].plot(np.real(fourier.get_buffer(fs)))
+    ax[-1].plot(out_source.sample(fs, 0, 0, dur))
 
-    for i, buf, env in zip(range(len(components)), components, envelopes):
-        ax[i + 2].plot(buf)
-        ax[i + 2].plot(np.real(env.sample(fs, 0, dur)))
+    for i, cmp, env in zip(range(len(components)), components, envelopes):
+        buf = cmp.sample(fs, 0, 0, dur)
+        ax[i + num_pre_cmp].plot(buf)
+        ax[i + num_pre_cmp].plot(np.real(env.get_buffer(fs, 0, dur)))
     plt.show()
 
-final_source = BufferSource(out, fs)
+final_source = out_source
 
-play_from_source(final_source, fs)
+play_from_source(final_source, fs, dur)
