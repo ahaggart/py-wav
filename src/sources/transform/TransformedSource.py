@@ -1,6 +1,7 @@
 from typing import List
 
 from SourceState import SourceState
+from custom_types import Frames
 from sources.Source import Source
 from transforms.Transform import Transform
 
@@ -17,8 +18,8 @@ class TransformedSource(Source):
             buffer = transform.apply(fs, buffer)
         return buffer
 
-    def get_duration(self, fs):
-        return self.child.get_duration(fs)
+    def get_period(self, fs: Frames) -> Frames:
+        return self.child.get_period(fs)
 
     def set_state(self, state: SourceState):
         super().set_state(state)

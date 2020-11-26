@@ -1,13 +1,11 @@
-from typing import Union
-
 from SourceState import SourceState
 from custom_types import Frames
-from parameters.Parameter import Parameter, parametrize, Parametrizable
+from parameters.Parameter import parametrize, Parametrizable
 from sources.Source import Source
 
 
 class ScaledSource(Source):
-    def __init__(self, scale: Parametrizable, child: Source, **kwargs):
+    def __init__(self, scale: Parametrizable, child: Source):
         Source.__init__(self)
         self.child = child
         self.scale = parametrize(scale)

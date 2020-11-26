@@ -1,10 +1,10 @@
 from SourceState import SourceState
-from samplers.Sampler import Sampler
+from custom_types import Frames
 from sources.Source import Source
 
 
 class DilatedSource(Source):
-    def __init__(self, factor: float, child: Source, **kwargs):
+    def __init__(self, factor: float, child: Source):
         Source.__init__(self)
         self.factor = float(factor)
         self.child = child
@@ -16,12 +16,8 @@ class DilatedSource(Source):
             end=int(end * self.factor),
         )
 
-    def get_duration(self, fs):
-        return self.child.get_duration(fs * self.factor)
-
-    def set_sampler(self, sampler: Sampler):
-        super().set_sampler(sampler)
-        self.child.set_sampler(sampler)
+    def get_period(self, fs: Frames) -> Frames:
+        return self.child.get_period(fs * self.factor)
 
     def set_state(self, state: SourceState):
         super().set_state(state)

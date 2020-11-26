@@ -9,6 +9,8 @@ from sources.Source import Source
 
 
 class SequentialSource(Source):
+    """Deprecated
+    """
     def __init__(self, children: List[Source] = None):
         Source.__init__(self)
         self.children = children if children is not None else []

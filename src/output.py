@@ -4,7 +4,6 @@ import numpy as np
 import simpleaudio as sa
 
 from custom_types import Frames
-from samplers.Sampler import RootSampler
 from sources.Source import Source
 
 
@@ -12,7 +11,6 @@ def play_from_source(root: Source,
                      fs: int,
                      start: Optional[Frames] = None,
                      end: Optional[Frames] = None):
-    root.set_sampler(RootSampler(fs))
     start = start if start is not None else 0
     end = end if end is not None else root.get_duration(fs)
     buffer = root.get_buffer(fs, start, end)
