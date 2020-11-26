@@ -10,9 +10,8 @@ from sources.Source import Source
 
 
 class AdditiveSource(Source):
-    def __init__(self, children: List[Tuple[float, Source]] = None, **kwargs):
+    def __init__(self, children: List[Tuple[float, Source]] = None):
         Source.__init__(self)
-        self.create_mapping(type_name='additive')
         self.children = children if children is not None else []
 
     def with_source(self, offset: float, source: Source):

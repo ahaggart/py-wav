@@ -10,7 +10,6 @@ from transforms.filters.Filter import Filter
 class FourierTransform(Transform):
     def __init__(self, filters: List[Filter], intensity=1, **kwargs):
         Transform.__init__(self)
-        self.create_mapping()
         self.filters = filters
         self.intensity = parametrize(intensity)
 

@@ -8,7 +8,6 @@ from sources.Source import Source
 class SourceParameter(Parameter):
     def __init__(self, source: Source, **kwargs):
         Parameter.__init__(self)
-        self.create_mapping()
         self.source = source
 
     def get_buffer(self, fs, start, end):

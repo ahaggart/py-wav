@@ -15,7 +15,6 @@ def split_dft(dft):
 class FourierInverseParameter(Parameter):
     def __init__(self, param: SpectralDomainParameter, **kwargs):
         Parameter.__init__(self)
-        self.create_mapping()
         self.param = param
 
     @staticmethod
@@ -31,7 +30,6 @@ class FourierInverseParameter(Parameter):
 class FourierParameter(SpectralDomainParameter):
     def __init__(self, source: Source, **kwargs):
         SpectralDomainParameter.__init__(self)
-        self.create_mapping()
         self.source = source
 
     @staticmethod

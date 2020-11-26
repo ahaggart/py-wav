@@ -9,7 +9,6 @@ from sources.Source import Source
 class BezierSource(Source):
     def __init__(self, seconds: float, freq: float, points: List[List[float]], **kwargs):
         Source.__init__(self)
-        self.create_mapping()
         self.seconds = seconds
         self.freq = float(freq)
         self.points = np.array(points)

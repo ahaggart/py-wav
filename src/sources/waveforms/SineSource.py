@@ -6,7 +6,6 @@ from sources.Source import Source
 class SineSource(Source):
     def __init__(self, freq, seconds, **kwargs):
         Source.__init__(self)
-        self.create_mapping(type_name='sine')
         self.freq = freq
         self.seconds = seconds
 

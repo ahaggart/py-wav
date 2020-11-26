@@ -7,7 +7,6 @@ from samplers.Sampler import Sampler
 class Source(Stateful):
     def __init__(self):
         Stateful.__init__(self)
-        self.create_mapping()
         self.sampler = None
         self.state: SourceState = None
 

@@ -9,9 +9,8 @@ from sources.Source import Source
 
 
 class SequentialSource(Source):
-    def __init__(self, children: List[Source] = None, **kwargs):
+    def __init__(self, children: List[Source] = None):
         Source.__init__(self)
-        self.create_mapping()
         self.children = children if children is not None else []
 
     def get_buffer(self, fs, start, end):

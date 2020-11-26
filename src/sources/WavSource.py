@@ -9,8 +9,6 @@ from sources.Source import Source
 class WavSource(Source):
     def __init__(self, file, **kwargs):
         Source.__init__(self)
-        self.create_mapping()
-
         self.file = file
         self.buffer = None
         self.source_fs = None

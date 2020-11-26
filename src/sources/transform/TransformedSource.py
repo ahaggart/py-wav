@@ -8,7 +8,6 @@ from transforms.Transform import Transform
 class TransformedSource(Source):
     def __init__(self, child: Source, transforms: List[Transform], **kwargs):
         Source.__init__(self)
-        self.create_mapping()
         self.child = child
         self.transforms = transforms
 

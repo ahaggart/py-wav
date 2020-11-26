@@ -10,7 +10,6 @@ from parameters.Parameter import Parameter
 class EnvelopeFollowingParameter(Parameter):
     def __init__(self, freq: Hz, p: Parameter, **kwargs):
         Parameter.__init__(self)
-        self.create_mapping()
         self.freq = freq
         self.p = p
 

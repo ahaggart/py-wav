@@ -11,7 +11,6 @@ from sources.Source import Source
 class Parameter(Source):
     def __init__(self):
         Stateful.__init__(self)
-        self.create_mapping()
 
     def get_buffer(self, fs, start, end):
         raise NotImplementedError
@@ -23,8 +22,6 @@ class Parameter(Source):
 class ConstantParameter(Parameter):
     def __init__(self, value: int, **kwargs):
         Parameter.__init__(self)
-        self.create_mapping()
-
         self.value = value
 
     def get_buffer(self, fs, start, end):

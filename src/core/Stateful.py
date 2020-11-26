@@ -1,12 +1,9 @@
 from SourceState import SourceState
-from mapper.Mappable import Mappable
 from mapper.mapper import tree_print
 
 
-class Stateful(Mappable):
+class Stateful:
     def __init__(self):
-        Mappable.__init__(self)
-        self.create_mapping()
         self.state = SourceState()
 
     def get_state(self):
@@ -15,7 +12,7 @@ class Stateful(Mappable):
     def set_state(self, state: SourceState):
         self.state = state.with_depth(state.depth + 1)
 
-        type_name = self.mapping['type']
+        type_name = str(self.__class__.__name__)
 
         tree_print(f"Type: {type_name}", self.state.depth)
         tree_print(f"| dilation: {self.state.dilation_factor}", self.state.depth)

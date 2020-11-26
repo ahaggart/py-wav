@@ -9,7 +9,6 @@ from sources.Source import Source
 class ScaledSource(Source):
     def __init__(self, scale: Parametrizable, child: Source, **kwargs):
         Source.__init__(self)
-        self.create_mapping('s_scaled')
         self.child = child
         self.scale = parametrize(scale)
 

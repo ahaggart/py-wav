@@ -6,8 +6,6 @@ from transforms.filters.Filter import Filter
 class HarmonicFilter(Filter):
     def __init__(self, harmonics, noise_floor=0.1, **kwargs):
         Filter.__init__(self)
-        self.create_mapping()
-
         self.harmonics = harmonics
         self.noise_floor = noise_floor
 

@@ -8,7 +8,6 @@ from parameters.spectral.SpectralDomainParameter import SpectralDomainParameter
 class BandPassParameter(SpectralDomainParameter):
     def __init__(self, lower: Hz, upper: Hz, param: SpectralDomainParameter, **kwargs):
         SpectralDomainParameter.__init__(self)
-        self.create_mapping()
         self.lower = lower
         self.upper = upper
         self.param = param

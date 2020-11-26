@@ -6,7 +6,6 @@ from sources.Source import Source
 class DilatedSource(Source):
     def __init__(self, factor: float, child: Source, **kwargs):
         Source.__init__(self)
-        self.create_mapping()
         self.factor = float(factor)
         self.child = child
 

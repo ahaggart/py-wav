@@ -6,7 +6,6 @@ from parameters.Parameter import Parameter
 class SlidingParameter(Parameter):
     def __init__(self, start, end, **kwargs):
         Parameter.__init__(self)
-        self.create_mapping()
         self.start = start
         self.end = end
 
