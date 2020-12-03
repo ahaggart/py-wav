@@ -1,8 +1,8 @@
-from core.Stateful import Stateful
+from core.WithState import WithState
 
 
-class Transform(Stateful):
+class Transform(WithState):
     def __init__(self):
-        Stateful.__init__(self)
+        WithState.__init__(self)
 def apply(self, fs, buffer):
         raise NotImplementedError

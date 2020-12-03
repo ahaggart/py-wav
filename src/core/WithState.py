@@ -2,7 +2,7 @@ from SourceState import SourceState
 from mapper.mapper import tree_print
 
 
-class Stateful:
+class WithState:
     def __init__(self):
         self.state = SourceState()
 

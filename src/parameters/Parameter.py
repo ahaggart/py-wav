@@ -2,7 +2,7 @@ from typing import Any, NewType, Union
 
 import numpy as np
 
-from core.Stateful import Stateful
+from core.WithState import WithState
 from custom_types import Frames, Seconds
 from mapper.Mappable import Mappable
 from sources.Source import Source
@@ -10,7 +10,7 @@ from sources.Source import Source
 
 class Parameter(Source):
     def __init__(self):
-        Stateful.__init__(self)
+        WithState.__init__(self)
 
     def get_buffer(self, fs, start, end):
         raise NotImplementedError

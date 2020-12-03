@@ -3,7 +3,7 @@ import numpy as np
 
 from SourceState import SourceState
 from output import play_from_source
-from parameters.BandPassParameter import BandPassParameter
+from parameters.spectral.BandPassParameter import BandPassParameter
 from parameters.EnvelopeFollowingParameter import EnvelopeFollowingParameter
 from parameters.SourceParameter import SourceParameter
 from parameters.spectral.FourierParameter import FourierParameter, FourierInverseParameter

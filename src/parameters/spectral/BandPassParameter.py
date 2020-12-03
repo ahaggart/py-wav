@@ -1,7 +1,7 @@
 import numpy as np
 
+from SourceState import SourceState
 from custom_types import Hz, Frames
-from parameters.Parameter import Parameter
 from parameters.spectral.SpectralDomainParameter import SpectralDomainParameter
 
 
@@ -28,3 +28,6 @@ class BandPassParameter(SpectralDomainParameter):
 
     def get_period(self, fs: Frames) -> Frames:
         return self.param.get_period(fs)
+
+    def get_state(self) -> SourceState:
+        return self.param.get_state()

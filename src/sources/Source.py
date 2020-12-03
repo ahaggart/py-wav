@@ -1,12 +1,13 @@
 from SourceState import SourceState
-from core.Stateful import Stateful
+from core.WithState import WithState
+from core.WithUUID import WithUUID
 from custom_types import Frames, Seconds
 
 
-class Source(Stateful):
+class Source(WithState, WithUUID):
     def __init__(self):
-        Stateful.__init__(self)
-        self.state = SourceState()
+        WithState.__init__(self)
+        WithUUID.__init__(self)
 
     def sample(self, fs: Frames, offset: Seconds, start: Frames, end: Frames):
         """Get the Source buffer at the given sample rate, offset, and range.

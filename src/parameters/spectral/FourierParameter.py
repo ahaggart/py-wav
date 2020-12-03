@@ -26,6 +26,9 @@ class FourierInverseParameter(Parameter):
         time_domain = FourierInverseParameter.get_inverse_dft(fs, src)
         return time_domain[start:end]
 
+    def get_period(self, fs: Frames) -> Frames:
+        return self.param.get_period(fs)
+
 
 class FourierParameter(SpectralDomainParameter):
     def __init__(self, source: Source, **kwargs):

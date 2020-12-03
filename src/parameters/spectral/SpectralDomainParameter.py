@@ -1,11 +1,13 @@
 from SourceState import SourceState
-from core.Stateful import Stateful
+from core.WithState import WithState
+from core.WithUUID import WithUUID
 from custom_types import Frames
 
 
-class SpectralDomainParameter(Stateful):
+class SpectralDomainParameter(WithState, WithUUID):
     def __init__(self):
-        Stateful.__init__(self)
+        WithState.__init__(self)
+        WithUUID.__init__(self)
 
     def get_buffer(self, fs: Frames):
         raise NotImplementedError

@@ -48,20 +48,3 @@ class EnvelopeFollowingParameter(Parameter):
 
         print("stop envelope")
         return mins
-
-
-"""
-at every step:
-
-  if (!Deque.Empty) and (Deque.Head.Index <= CurrentIndex - T) then 
-     Deque.ExtractHead;
-  //Head is too old, it is leaving the window
-
-  while (!Deque.Empty) and (Deque.Tail.Value > CurrentValue) do
-     Deque.ExtractTail;
-  //remove elements that have no chance to become minimum in the window
-
-  Deque.AddTail(CurrentValue, CurrentIndex); 
-  CurrentMin = Deque.Head.Value
-  //Head value is minimum in the current window
-"""
