@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+from custom_types import Frames
 from SourceState import SourceState
 from output import play_from_source
 from parameters.spectral.BandPassParameter import BandPassParameter
@@ -19,7 +20,7 @@ MIN_FREQ = 20
 MAX_FREQ = 10000
 NUM_BANDS = 10
 
-START_FRAME = 0
+START_FRAME: Frames = 0
 END_FRAME = None
 
 wav_source = WavSource("resources/wav/please_turn_on_the_air.wav")

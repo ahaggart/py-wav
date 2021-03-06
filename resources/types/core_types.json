@@ -1,5 +1,8 @@
 [
   {
-
+    "name": "additive",
+    "fields": {
+      "children": { "type": "list", "of": {"type": "tuple", "of": [{ "type": "float"}, { "type": "source"}]}}
+    }
   }
 ]
