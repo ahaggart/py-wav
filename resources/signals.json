@@ -1,0 +1,19 @@
+[
+  {
+    "type": "wav",
+    "uuid": "wav",
+    "file": "resources/wav/please_turn_on_the_air.wav"
+  },
+  {
+    "type": "offset",
+    "uuid": "offset+2",
+    "child": "wav",
+    "offset": 2
+  },
+  {
+    "type": "offset",
+    "uuid": "offset-2",
+    "child": "offset+2",
+    "offset": -2
+  }
+]

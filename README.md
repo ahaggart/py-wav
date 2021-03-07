@@ -149,7 +149,31 @@ signal X. To insert our transform, create the signal Z holding reference B.
 Update the signal manager such that reference A resolves to signal Z, and 
 reference B resolves to signal X.
 
+Problem 7: Transform minimization
 
+Suppose we have a chain of signals V -> W -> X -> Y -> Z, where W and Y are
+spectral-primary signals and V, X, and Z are temporal-primary signals. To
+compute V, we will need to compute two fourier transforms, for Y -> Z and
+W -> X, and two fourier inverses, for X -> Y and V -> W. If V, W, X, and Y are
+linear operations, we can reorder them to V -> X -> W -> Y -> Z. This ordering
+requires only one fourier transform (Y -> Z) and one fourier inverse (X -> W).
+
+We can implement this reordering by modifying the reference table. 
+
+In order to optimize, nodes will need to implement one:
+
+`is_linear`: True if the node's operations are linear. Default to False.
+
+We will also need to know the "primary domain" associated with any graph edge.
+This information can be provided "dynamically" as part of the call to the
+signal manager.
+
+`resolve_reference(uuid, domain: Optional[str]=None)`
+
+Problem 8: Rendering
+
+Rendering will be done in the context of a selected node. All child nodes of the
+selected node will be shown.
 
 #### Data
 

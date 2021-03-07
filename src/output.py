@@ -34,8 +34,8 @@ def play_signal(signal: Signal,
                 start: Optional[Frames] = None,
                 end: Optional[Frames] = None):
     start = start if start is not None else 0
-    end = end if end is not None else signal.get_range()[0]
-    buffer = signal.get_temporal(start, end)
+    end = end if end is not None else signal.get_range(fs)[1]
+    buffer = signal.get_temporal(fs, start, end)
 
     # Ensure that highest value is in 16-bit range
     audio = buffer / np.max(np.abs(buffer)) * (2 ** 15 - 1)

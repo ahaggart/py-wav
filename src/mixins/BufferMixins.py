@@ -16,13 +16,19 @@ class TilingMixin:
         buffer = self.get_buffer(fs)
         lower, upper = self.get_range(fs)
 
+        # compute the tileable range of the buffer
         buf_start = 0 if lower is None else max(lower, 0)
         buf_end = len(buffer) if upper is None else min(upper, len(buffer))
-
         source_buffer = buffer[buf_start:buf_end]
+
+        # compute the sampleable range of the signal
         sample_end = end if upper is None else min(upper, end)
         sample_start = start if lower is None else max(lower, start)
+
+        # tile the tileable range enough to cover the sampleable range
         n_tiles = int((sample_end-sample_start)/len(source_buffer))+1
+
+        # rotate the tiled buffer into the same index space as the output
         tiled_buffer = np.roll(np.tile(source_buffer, n_tiles), buf_start-start)
 
         output_start = sample_start - start
