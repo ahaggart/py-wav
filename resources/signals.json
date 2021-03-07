@@ -7,13 +7,17 @@
   {
     "type": "offset",
     "uuid": "offset+2",
-    "child": "wav",
+    "refs": {
+      "child": "wav"
+    },
     "offset": 2
   },
   {
     "type": "offset",
     "uuid": "offset-2",
-    "child": "offset+2",
+    "refs": {
+      "child": "offset+2"
+    },
     "offset": -2
   }
 ]

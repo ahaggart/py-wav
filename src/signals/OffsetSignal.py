@@ -1,22 +1,15 @@
-import Domains
 from Signal import Signal
-from SignalContext import SignalContext
 from SignalData import SignalData
 from custom_types import Frames, FrameRange, Seconds
 from mixins.DomainMixins import TemporalDomainHelper
 
 
 class OffsetSignal(TemporalDomainHelper, Signal):
-    def __init__(self, context: SignalContext, data: SignalData):
-        Signal.__init__(self, context, data)
+    def __init__(self, data: SignalData):
+        Signal.__init__(self, data)
         TemporalDomainHelper.__init__(self)
 
-        self.child = self.context.manager.get_signal(
-            uuid=self.data.data['child'],
-            caller_uuid=self.data.uuid,
-            primary_domain=Domains.TIME,
-        )
-
+        self.child = self.data.refs['child']
         self.offset: Seconds = float(self.data.data['offset'])
 
     def get_offset_frames(self, fs: Frames) -> Frames:

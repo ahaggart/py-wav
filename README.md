@@ -39,11 +39,18 @@ dependency DAG. If changes are made to node "f", we must invalidate the buffer
 cache for "f", then walk the cache DAG and invalidate any other buffer caches
 traversed, including the cache for node "d".
 
+### Framework
+
+Signal -> Reference Node -> Signal Manager -> Cache Node -> Cache -> Signal
+
+`SignalCache`
+* owns uuid map?
+* signal cache should be operate behind reference table
+
+`SignalManager`
+* owns reference map
+
 ### Signals
-
-Pass framerate in constructor?
-
-Signals must be sample-able from absolute space
 
 Problem 1: Spectral-first signals must have a temporal component.
 * convert spectral signal to temporal domain
@@ -174,6 +181,17 @@ Problem 8: Rendering
 
 Rendering will be done in the context of a selected node. All child nodes of the
 selected node will be shown.
+
+Problem 9: Circular imports
+
+If the Signal class is aware of the Signal Manager class, this results in a
+circular import due to the use of the Wrapper Signal by the manager.
+
+Approach 1: Signal refs are pre-resolved. Signal does not need to interact with
+the manager directly.
+
+This approach has the problem that we cannot provide caller-specific information
+when resolving the references.
 
 #### Data
 

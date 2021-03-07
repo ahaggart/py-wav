@@ -3,7 +3,6 @@ import wave
 import numpy as np
 
 from Signal import Signal
-from SignalContext import SignalContext
 from SignalData import SignalData
 from custom_types import Frames, FrameRange
 from mixins.BufferMixins import TilingMixin
@@ -11,8 +10,8 @@ from mixins.DomainMixins import TemporalDomainHelper
 
 
 class WavSignal(TemporalDomainHelper, TilingMixin, Signal):
-    def __init__(self, context: SignalContext, data: SignalData):
-        Signal.__init__(self, context, data)
+    def __init__(self, data: SignalData):
+        Signal.__init__(self, data)
         TemporalDomainHelper.__init__(self)
         TilingMixin.__init__(self)
         self.file = data.data['file']
