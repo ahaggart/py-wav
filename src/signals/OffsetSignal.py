@@ -9,7 +9,7 @@ class OffsetSignal(TemporalDomainHelper, Signal):
         Signal.__init__(self, data)
         TemporalDomainHelper.__init__(self)
 
-        self.child = self.data.refs['child']
+        self.child = self.data.resolved_refs['child']
         self.offset: Seconds = float(self.data.data['offset'])
 
     def get_offset_frames(self, fs: Frames) -> Frames:

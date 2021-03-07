@@ -1,19 +1,28 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Dict, Type
 
 import Signal
-import SignalCache
+from SignalCache import SignalCache
+from SignalData import SignalData
+from SignalGraph import SignalGraph
 
 
 class SignalManager:
-    def __init__(self, cache: SignalCache.SignalCache):
-        self.signals = None
+    def __init__(self, graph: SignalGraph, cache: SignalCache):
+        self.signals = {}
         self.cache = cache
+        self.graph = graph
         self.references = {}
 
-    def setup(self, signals: List[Signal.Signal]):
-        self.signals = {signal.data.uuid: signal for signal in signals}
+    def setup(self,
+              initializers: Dict[str, Type[Signal]],
+              signal_data: List[SignalData]):
+        for data in signal_data:
+            data.set_refs(self.cache.resolve_refs(data.raw_refs))
+            initializer = initializers[data.type_name]
+            signal = initializer(data)
+            self.signals[data.uuid] = signal
 
     def get_signal(self,
                    uuid: str,

@@ -1,7 +1,8 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Dict, Type
 
 from Signal import Signal
+from SignalData import SignalData
 from custom_types import Frames, FrameRange
 
 
@@ -31,13 +32,40 @@ class CachedSignal(Signal):
 
 
 class SignalCache:
-    def __init__(self):
-        self.signals = None
+    def __init__(self,
+                 initializers: Dict[str, Type[Signal]],
+                 signal_data: List[SignalData]):
         self.temporal = {}
         self.spectral = {}
+        self.cache_nodes = self.create_cache_nodes(signal_data)
+        self.signals = self.create_signals(initializers, signal_data)
 
-    def setup(self, signals: List[Signal]):
-        self.signals = {signal.data.uuid: signal for signal in signals}
+    def create_cache_nodes(self,
+                           signal_data: List[SignalData]
+                           ) -> Dict[str, CachedSignal]:
+        cache_nodes = {}
+        for data in signal_data:
+            cache_nodes[data.uuid] = CachedSignal(data.uuid, self)
+        return cache_nodes
+
+    def create_signals(self,
+                       initializers: Dict[str, Type[Signal]],
+                       signal_data: List[SignalData]):
+        signals = {}
+        for data in signal_data:
+            data.set_refs(self.resolve_refs(data.raw_refs))
+            initializer = initializers[data.type_name]
+            signal = initializer(data)
+            signals[data.uuid] = signal
+        return signals
+
+    def resolve_refs(self, raw_refs: Dict[str, str]) -> Dict[str, Signal]:
+        return {name: self.cache_nodes[uuid] for name, uuid in raw_refs.items()}
+
+    def get_cache_node(self, uuid: str):
+        if uuid not in self.cache_nodes:
+            self.cache_nodes[uuid] = CachedSignal(uuid, self)
+        return self.cache_nodes[uuid]
 
     def get_signal(self, uuid: str):
         return self.signals[uuid]

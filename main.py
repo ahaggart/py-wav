@@ -1,8 +1,8 @@
 import json
+from typing import Dict, Type
 
 from Signal import Signal
-from SignalCache import SignalCache, CachedSignal
-from SignalContext import SignalContext
+from SignalCache import SignalCache
 from SignalData import SignalData
 from SignalGraph import SignalGraph
 from SignalManager import SignalManager
@@ -11,39 +11,23 @@ from signals.OffsetSignal import OffsetSignal
 from signals.WavSignal import WavSignal
 
 fs = 44100
-graph = SignalGraph()
-cache = SignalCache()
-manager = SignalManager(cache)
 
 with open("resources/signals.json") as f:
     signals_raw = json.load(f)
 
+signal_data = [SignalData(d) for d in signals_raw]
 
-def initialize_class(cls, raw_data: dict) -> Signal:
-    if 'refs' in raw_data:
-        refs = {name: CachedSignal(uuid, cache) for name, uuid in raw_data['refs'].items()}
-    else:
-        refs = {}
-    signal_data = SignalData(raw_data)
-    signal_data.set_refs(refs)
-    return cls(signal_data)
+initializers: Dict[str, Type[Signal]] = {
+    "wav": WavSignal,
+    "offset": OffsetSignal,
+}
 
+graph = SignalGraph(signal_data)
+cache = SignalCache(initializers, signal_data)
+manager = SignalManager(graph, cache)
 
-def initialize(raw_data: dict):
-    type_name = raw_data['type']
-    if type_name == 'wav':
-        return initialize_class(WavSignal, raw_data)
-    elif type_name == 'offset':
-        return initialize_class(OffsetSignal, raw_data)
-    else:
-        raise KeyError
+signals = cache.signals
 
-
-signals = [initialize(d) for d in signals_raw]
-
-manager.setup(signals)
-cache.setup(signals)
-
-offset_signal = list(filter(lambda s: s.data.uuid == "offset-2", signals))[0]
+offset_signal = signals['offset-2']
 
 play_signal(offset_signal, fs)

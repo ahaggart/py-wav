@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from typing import List
+
 from Signal import Signal
+from SignalData import SignalData
 from custom_types import Frames, FrameRange
 
 
@@ -26,15 +29,21 @@ class DummySignal(Signal):
 
 
 class SignalGraphEdge:
-    def __init__(self, from_uuid: str, to_uuid: str, domain: str):
+    def __init__(self, from_uuid: str, to_uuid: str, domain: str = None):
         self.from_uuid = from_uuid
         self.to_uuid = to_uuid
         self.domain = domain
 
 
 class SignalGraph:
-    def __init__(self):
-        self.edges = []
+    def __init__(self, signal_data: List[SignalData]):
+        self.edges = SignalGraph.create_edges(signal_data)
 
-    def link(self, from_uuid: str, to_uuid: str, domain: str) -> Signal:
-        edge = SignalGraphEdge(from_uuid, to_uuid, domain)
+    @staticmethod
+    def create_edges(signal_data: List[SignalData]) -> List[SignalGraphEdge]:
+        edges = []
+        for data in signal_data:
+            from_uuid = data.uuid
+            for to_uuid in data.raw_refs.values():
+                edges.append(SignalGraphEdge(from_uuid, to_uuid))
+        return edges
