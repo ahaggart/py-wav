@@ -6,7 +6,7 @@
   },
   {
     "type": "offset",
-    "uuid": "offset+2",
+    "uuid": "offset:2",
     "refs": {
       "child": "wav"
     },
@@ -14,18 +14,26 @@
   },
   {
     "type": "offset",
-    "uuid": "offset-2",
+    "uuid": "offset:-2",
     "refs": {
-      "child": "offset+2"
+      "child": "offset:2"
     },
     "offset": -2
   },
   {
     "type": "dilated",
-    "uuid": "dilated+2",
+    "uuid": "dilated:0.5",
     "refs": {
-      "child": "offset-2"
+      "child": "offset:-2"
     },
     "factor": 0.5
+  },
+  {
+    "type": "dilated",
+    "uuid": "dilated:2",
+    "refs": {
+      "child": "dilated:0.5"
+    },
+    "factor": 2
   }
 ]

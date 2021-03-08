@@ -200,6 +200,23 @@ the non-zero regions.
 When spectral-dominated signals are converted back to the temporal domain, they
 should respect the values given by `get_range`.
 
+Problem 10: Range creep
+
+OffsetSignal extends the range of its child in the direction of offset. These
+extensions compound with multiple offsets.
+
+Suppose signal X has a range of (Y, Z). Signal W offsets X by +2 frames, and
+has a range of (Y, Z+2). Signal V offsets W by -2 frames, and has a range of
+(Y-2, Z+2).
+
+Thus X's range covers (Z-Y) frames while V's range covers (Z+2-(Y-2)) frames.
+V is the same signal as X, but the reported range covers 4 additional frames.
+
+We cannot easily remove range creep without violating encapsulation. In
+situations where range creep is a problem, such as tiling, the workaround is
+to use a TruncatedSignal to manually set the range.
+
+
 #### Data
 
 Data-centric design.

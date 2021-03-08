@@ -56,6 +56,8 @@ class SignalCache:
             data.set_refs(self.resolve_refs(data.raw_refs))
             initializer = initializers[data.type_name]
             signal = initializer(data)
+            if data.uuid in signals:
+                raise KeyError(f"Duplicate UUID {data.uuid} in signals")
             signals[data.uuid] = signal
         return signals
 

@@ -30,7 +30,7 @@ class TilingMixin:
         n_tiles = int((sample_end-sample_start)/len(source_buffer))+1
 
         # rotate the tiled buffer into the same index space as the output
-        tiled_buffer = np.roll(np.tile(source_buffer, n_tiles), -start)
+        tiled_buffer = np.roll(np.tile(source_buffer, n_tiles+1), -start)
 
         output_start = sample_start - start
         output_end = sample_end - start

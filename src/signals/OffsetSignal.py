@@ -19,13 +19,16 @@ class OffsetSignal(TemporalDomainHelper, Signal):
         child_lower, child_upper = self.child.get_range(fs)
         offset_frames = self.get_offset_frames(fs)
 
-        if child_upper is None or child_lower is None:
-            return child_lower, child_upper
+        if offset_frames > 0:
+            return (
+                child_lower,
+                child_upper + offset_frames if child_upper is not None else None,
+            )
         else:
-            if offset_frames > 0:
-                return child_lower, child_upper + offset_frames
-            else:
-                return child_lower + offset_frames, child_upper
+            return (
+                child_lower + offset_frames if child_lower is not None else None,
+                child_upper,
+            )
 
     def get_period(self, fs: Frames) -> Frames:
         """Return the period of the offset signal.
