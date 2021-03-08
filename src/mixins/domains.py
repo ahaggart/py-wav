@@ -1,7 +1,7 @@
 import numpy as np
 
 from custom_types import Frames
-from mixins.BufferMixins import TilingMixin
+from mixins.buffers import TilingMixin
 
 
 def split_dft(dft):
@@ -24,10 +24,20 @@ class TemporalDomainHelper:
     def get_spectral(self, fs: Frames):
         lower, upper = self.get_range(fs)
         period = self.get_period(fs)
+        if upper-lower < period:
+            raise ValueError(
+                f"Given range ({lower}, {upper}) does not cover period {period}"
+            )
         if lower is not None:
-            buffer = self.get_temporal(fs, lower, lower+period)
+            buffer = np.roll(
+                self.get_temporal(fs, lower, lower+period),
+                lower,
+            )
         elif upper is not None:
-            buffer = self.get_temporal(fs, upper-period, upper)
+            buffer = np.roll(
+                self.get_temporal(fs, upper-period, upper),
+                upper-period,
+            )
         else:
             buffer = self.get_temporal(fs, 0, period)
         return to_spectral(fs, buffer)

@@ -7,6 +7,7 @@ from SignalData import SignalData
 from SignalGraph import SignalGraph
 from SignalManager import SignalManager
 from output import play_signal
+from signals.DilatedSignal import DilatedSignal
 from signals.OffsetSignal import OffsetSignal
 from signals.WavSignal import WavSignal
 
@@ -20,6 +21,7 @@ signal_data = [SignalData(d) for d in signals_raw]
 initializers: Dict[str, Type[Signal]] = {
     "wav": WavSignal,
     "offset": OffsetSignal,
+    "dilated": DilatedSignal,
 }
 
 graph = SignalGraph(signal_data)
@@ -28,6 +30,6 @@ manager = SignalManager(graph, cache)
 
 signals = cache.signals
 
-offset_signal = signals['offset-2']
+offset_signal = signals['dilated+2']
 
 play_signal(offset_signal, fs)

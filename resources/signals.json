@@ -19,5 +19,13 @@
       "child": "offset+2"
     },
     "offset": -2
+  },
+  {
+    "type": "dilated",
+    "uuid": "dilated+2",
+    "refs": {
+      "child": "offset-2"
+    },
+    "factor": 0.5
   }
 ]

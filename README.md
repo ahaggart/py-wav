@@ -182,16 +182,23 @@ Problem 8: Rendering
 Rendering will be done in the context of a selected node. All child nodes of the
 selected node will be shown.
 
-Problem 9: Circular imports
+Problem 9: Discrete fourier analysis of signals unbounded in one direction
 
-If the Signal class is aware of the Signal Manager class, this results in a
-circular import due to the use of the Wrapper Signal by the manager.
+At a high level there are three cases for discrete fourier analysis:
+1. Bounded in both directions
+2. Unbounded in both directions
+3. Unbounded in one direction
 
-Approach 1: Signal refs are pre-resolved. Signal does not need to interact with
-the manager directly.
+For cases (1) and (2), discrete fourier analysis works as expected. For case
+(3), we cannot perform true fourier analysis since the signal does not have a
+"period". A similar problem arises when tiling case (3) signals.
 
-This approach has the problem that we cannot provide caller-specific information
-when resolving the references.
+For case (3) signals, we consider the period as if the signal were unbounded in
+both directions. This allows us to perform fourier analysis that is accurate in
+the non-zero regions.
+
+When spectral-dominated signals are converted back to the temporal domain, they
+should respect the values given by `get_range`.
 
 #### Data
 

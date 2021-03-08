@@ -4,21 +4,29 @@ from unittest import TestCase
 import numpy as np
 
 from custom_types import Frames, FrameRange
-from mixins.BufferMixins import TilingMixin
+from mixins.buffers import TilingMixin
 
 
 class TestBase(TilingMixin):
-    def __init__(self, length: Frames, lower: Optional[Frames], upper: Optional[Frames]):
+    def __init__(self,
+                 length: Frames,
+                 lower: Optional[Frames],
+                 upper: Optional[Frames],
+                 period: Frames = None):
         TilingMixin.__init__(self)
         self.length = length
         self.lower = lower
         self.upper = upper
+        self.period = self.length if period is None else period
 
     def get_buffer(self, fs: Frames):
         return np.arange(self.length)
 
     def get_range(self, fs: Frames) -> FrameRange:
         return self.lower, self.upper
+
+    def get_period(self, fs: Frames) -> Frames:
+        return self.period
 
 
 class TilingMixinTest(TestCase):
@@ -128,3 +136,60 @@ class TilingMixinTest(TestCase):
             np.array([0, 1, 2, 3, 4]),
             signal.get_temporal(self.fs, 10, 15),
         )
+
+    def test_rotated(self):
+        signal = TestBase(10, 2, 12)
+        self.assertEqualsNumpy(
+            np.array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1]),
+            signal.get_temporal(self.fs, 2, 12),
+        )
+        self.assertEqualsNumpy(
+            np.array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 0, 0]),
+            signal.get_temporal(self.fs, 2, 14),
+        )
+        self.assertEqualsNumpy(
+            np.array([0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1]),
+            signal.get_temporal(self.fs, 0, 12),
+        )
+
+    def test_rotated_extended(self):
+        signal = TestBase(10, 2, 22)
+        self.assertEqualsNumpy(
+            np.array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1]),
+            signal.get_temporal(self.fs, 2, 12),
+        )
+        self.assertEqualsNumpy(
+            np.array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3]),
+            signal.get_temporal(self.fs, 2, 14),
+        )
+        self.assertEqualsNumpy(
+            np.array([0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1]),
+            signal.get_temporal(self.fs, 0, 12),
+        )
+        self.assertEqualsNumpy(
+            np.array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1] * 2),
+            signal.get_temporal(self.fs, 2, 22),
+        )
+
+    def test_rotated_extended_negative(self):
+        signal = TestBase(10, -18, 2)
+        self.assertEqualsNumpy(
+            np.array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1]),
+            signal.get_temporal(self.fs, -8, 2),
+        )
+        self.assertEqualsNumpy(
+            np.array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 0, 0]),
+            signal.get_temporal(self.fs, -8, 4),
+        )
+        self.assertEqualsNumpy(
+            np.array([0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1]),
+            signal.get_temporal(self.fs, -20, -8),
+        )
+        self.assertEqualsNumpy(
+            np.array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1] * 2),
+            signal.get_temporal(self.fs, -18, 2),
+        )
+
+    def test_invalid_base(self):
+        signal = TestBase(10, 0, 10, 12)
+        self.assertRaises(ValueError, signal.get_temporal, self.fs, 0, 10)

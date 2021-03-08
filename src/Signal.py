@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from SignalData import SignalData
+import SignalData
 from custom_types import Frames, FrameRange
 
 
 class Signal:
-    def __init__(self, data: SignalData):
+    def __init__(self, data: SignalData.SignalData):
         self.data = data
 
     def get_temporal(self, fs: Frames, start: Frames, end: Frames):

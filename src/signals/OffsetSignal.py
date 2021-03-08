@@ -1,7 +1,7 @@
 from Signal import Signal
 from SignalData import SignalData
 from custom_types import Frames, FrameRange, Seconds
-from mixins.DomainMixins import TemporalDomainHelper
+from mixins.domains import TemporalDomainHelper
 
 
 class OffsetSignal(TemporalDomainHelper, Signal):
@@ -10,7 +10,7 @@ class OffsetSignal(TemporalDomainHelper, Signal):
         TemporalDomainHelper.__init__(self)
 
         self.child = self.data.resolved_refs['child']
-        self.offset: Seconds = float(self.data.data['offset'])
+        self.offset: Seconds = Seconds(self.data.data['offset'])
 
     def get_offset_frames(self, fs: Frames) -> Frames:
         return int(fs * self.offset)
@@ -19,14 +19,13 @@ class OffsetSignal(TemporalDomainHelper, Signal):
         child_lower, child_upper = self.child.get_range(fs)
         offset_frames = self.get_offset_frames(fs)
 
-        if offset_frames > 0:
-            lower = 0 if child_lower is not None else None
-            upper = child_upper + offset_frames if child_upper is not None else None
+        if child_upper is None or child_lower is None:
+            return child_lower, child_upper
         else:
-            lower = child_lower + offset_frames if child_lower is not None else None
-            upper = max(child_upper + offset_frames, 0) if child_upper is not None else None
-
-        return lower, upper
+            if offset_frames > 0:
+                return child_lower, child_upper + offset_frames
+            else:
+                return child_lower + offset_frames, child_upper
 
     def get_period(self, fs: Frames) -> Frames:
         """Return the period of the offset signal.
