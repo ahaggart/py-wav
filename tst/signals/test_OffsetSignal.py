@@ -75,7 +75,7 @@ class TestOffsetSignal(SignalTestCase):
         self.assertEqual(5, zero_lower.get_period(self.test_fs))
 
         pos_lower = self.create_signal_unbounded(3, [0, 1, 2, 3, 4], "backward")
-        self.assertEqual((None, 5), pos_lower.get_range(self.test_fs))
+        self.assertEqual((None, 8), pos_lower.get_range(self.test_fs))
         self.assertEqual(5, pos_lower.get_period(self.test_fs))
 
         neg_lower = self.create_signal_unbounded(-3, [0, 1, 2, 3, 4], "backward")
@@ -91,5 +91,5 @@ class TestOffsetSignal(SignalTestCase):
         self.assertEqual(5, pos_upper.get_period(self.test_fs))
 
         neg_upper = self.create_signal_unbounded(-3, [0, 1, 2, 3, 4], "forward")
-        self.assertEqual((0, None), neg_upper.get_range(self.test_fs))
+        self.assertEqual((-3, None), neg_upper.get_range(self.test_fs))
         self.assertEqual(5, neg_upper.get_period(self.test_fs))

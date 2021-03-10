@@ -3,7 +3,7 @@ from typing import List, Dict, Type
 
 from Signal import Signal
 from SignalData import SignalData
-from custom_types import Frames, FrameRange
+from custom_types import Frames, FrameRange, Hz
 
 
 class CachedSignal(Signal):
@@ -72,8 +72,8 @@ class SignalCache:
     def get_signal(self, uuid: str):
         return self.signals[uuid]
 
-    def get_temporal(self, uuid: str, fs: Frames, start: Frames, end: Frames):
+    def get_temporal(self, uuid: str, fs: Hz, start: Frames, end: Frames):
         return self.get_signal(uuid).get_temporal(fs, start, end)
 
-    def get_spectral(self, uuid: str, fs: Frames):
+    def get_spectral(self, uuid: str, fs: Hz):
         return self.get_signal(uuid).get_spectral(fs)

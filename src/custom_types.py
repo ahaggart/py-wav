@@ -1,6 +1,7 @@
 from typing import NewType, Union, Optional, Tuple
 
-Seconds = NewType("seconds", float)
-Frames = NewType("frames", int)
-FrameRange = NewType("framerange", Tuple[Optional[Frames], Optional[Frames]])
-Hz = NewType("hz", float)
+Seconds = NewType("Seconds", float)
+Frames = NewType("Frames", int)
+Partial = NewType("Partial", float)
+FrameRange = NewType("FrameRange", Tuple[Optional[Partial], Optional[Partial]])
+Hz = NewType("Hz", float)

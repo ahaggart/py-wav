@@ -213,3 +213,13 @@ Aggressively flooring Frame amounts to integers introduces rounding error which
 compounds as we traverse deeper into the signal graph.
 
 Solution: Do not round Frame amounts until they are needed for indexing.
+
+Q: Should samples still be requested in integer frame amounts?
+A: Yes.
+
+Q: How should we convert partial frames to true frames?
+A: We will apply ceil() to convert from partials to frames.
+
+Q: How do we avoid buildup of rounding errors when many small
+buffers are involved?
+A:

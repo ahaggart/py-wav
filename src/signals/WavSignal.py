@@ -4,6 +4,7 @@ import numpy as np
 
 from Signal import Signal
 from SignalData import SignalData
+from custom_types import Hz
 from mixins.buffers import TilingMixin, DilatingMixin
 from mixins.domains import TemporalDomainHelper
 
@@ -15,7 +16,7 @@ class WavSignal(TemporalDomainHelper, DilatingMixin, Signal):
         TilingMixin.__init__(self)
         self.file = data.data['file']
         self.buffer = None
-        self.source_fs = None
+        self.source_fs: Hz = None
 
     def load_source(self):
         with wave.open(self.file, 'rb') as w:

@@ -2,7 +2,7 @@ import numpy as np
 
 from Signal import Signal
 from SignalData import SignalData
-from custom_types import Frames, FrameRange
+from custom_types import Frames, FrameRange, Partial
 from mixins.buffers import TilingMixin, DilatingMixin
 from mixins.domains import TemporalDomainHelper
 
@@ -19,5 +19,5 @@ class BufferSignal(DilatingMixin, TemporalDomainHelper, Signal):
     def get_source_buffer(self):
         return self.buffer
 
-    def get_source_fs(self):
+    def get_source_fs(self) -> Partial:
         return self.fs

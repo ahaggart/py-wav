@@ -1,8 +1,9 @@
 from Signal import Signal
 from SignalData import SignalData
-from custom_types import FrameRange, Frames
+from custom_types import FrameRange, Hz, Partial
 from mixins.buffers import TilingMixin
 from mixins.domains import TemporalDomainHelper
+from util.buffer import get_centered_sample
 
 
 class TiledSignal(TilingMixin, TemporalDomainHelper, Signal):
@@ -14,9 +15,9 @@ class TiledSignal(TilingMixin, TemporalDomainHelper, Signal):
         self.direction = self.data.data['direction']
 
         if self.direction not in ['forward', 'backward', 'both']:
-            raise ValueError( f"Given direction {self.direction} is not valid")
+            raise ValueError(f"Given direction {self.direction} is not valid")
 
-    def get_range(self, fs: Frames) -> FrameRange:
+    def get_range(self, fs: Hz) -> FrameRange:
         lower, upper = self.child.get_range(fs)
         if self.direction == 'forward':
             return lower, None
@@ -25,15 +26,8 @@ class TiledSignal(TilingMixin, TemporalDomainHelper, Signal):
         else:
             return None, None
 
-    def get_period(self, fs: Frames) -> Frames:
+    def get_period(self, fs: Hz) -> Partial:
         return self.child.get_period(fs)
 
-    def get_buffer(self, fs: Frames):
-        lower, upper = self.child.get_range(fs)
-        period = self.child.get_period(fs)
-        if lower is not None:
-            return self.child.get_temporal(fs, lower, lower+period)
-        elif upper is not None:
-            return self.child.get_temporal(fs, upper-period, upper)
-        else:
-            return self.child.get_temporal(fs, 0, period)
+    def get_buffer(self, fs: Hz):
+        return get_centered_sample(self.child, fs)
