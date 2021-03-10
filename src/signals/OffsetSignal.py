@@ -12,8 +12,8 @@ class OffsetSignal(TemporalDomainHelper, Signal):
         self.child = self.data.resolved_refs['child']
         self.offset: Seconds = Seconds(self.data.data['offset'])
 
-    def get_offset_frames(self, fs: Frames) -> Frames:
-        return int(fs * self.offset)
+    def get_offset_frames(self, fs: Frames):
+        return fs * self.offset
 
     def get_range(self, fs: Frames) -> FrameRange:
         child_lower, child_upper = self.child.get_range(fs)

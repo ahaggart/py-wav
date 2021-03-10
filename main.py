@@ -57,4 +57,4 @@ if PLOT:
         sub_ax.title.set_text(signal.data.uuid)
     plt.show()
 else:
-    play_signal(offset_signal, fs)
+    play_signal(dilated_signal, fs)
