@@ -1,7 +1,5 @@
 from typing import List
 
-import numpy as np
-
 from signals.BufferSignal import BufferSignal
 from signals.DilatedSignal import DilatedSignal
 from signals.OffsetSignal import OffsetSignal
@@ -65,11 +63,11 @@ class TestDilatedSignal(SignalTestCase):
         )
 
     def test_offset_dilation(self):
+        # TODO: This is finicky due to rounding stuff
         signal = self.create_dilated(1.875, [0, 1, 2, 3, 4, 5], offset=2)
         self.assertEqual((0, 15), signal.get_range(self.test_fs))
         self.assertEqual(15, signal.get_period(self.test_fs))
-        print(np.equal(
+        self.assertEqualsNumpy(
             [0, 0, 0, 0, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
-            signal.get_temporal(self.test_fs, 0, 15)
-        ))
-        self.assertTrue(False)
+            signal.get_temporal(self.test_fs, 0, 15),
+        )

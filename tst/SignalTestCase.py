@@ -8,7 +8,7 @@ from SignalData import SignalData
 class SignalTestCase(TestCase):
     def assertEqualsNumpy(self, a1, a2, msg=None):
         self.assertTrue(
-            np.array_equal(a1, a2),
+            np.allclose(a1, a2),
             msg=f"{a1} != {a2}" + (msg if msg is not None else ""),
         )
 

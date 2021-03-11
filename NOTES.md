@@ -218,8 +218,12 @@ Q: Should samples still be requested in integer frame amounts?
 A: Yes.
 
 Q: How should we convert partial frames to true frames?
-A: We will apply ceil() to convert from partials to frames.
+A: We will apply ceil() to convert from partials to frames when working with
+frame ranges. This logic is provided via `util.frames.to_frames()`.
+We will apply round() to convert from partials to frames when working with
+signal periods. This logic is provided via `util.frames.to_bufsize()`.
 
 Q: How do we avoid buildup of rounding errors when many small
 buffers are involved?
 A:
+TilingMixin needs to upsample to near-integer period 

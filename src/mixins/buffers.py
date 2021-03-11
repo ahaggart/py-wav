@@ -3,7 +3,6 @@ from math import ceil
 import numpy as np
 
 from custom_types import Frames, FrameRange, Hz, Partial
-from util.buffer import get_valid_range
 from util.frames import to_frames, to_bufsize
 
 
@@ -21,6 +20,7 @@ class TilingMixin:
         source_buffer = self.get_buffer(fs)
         lower, upper = self.get_range(fs)
 
+        # TODO: upsample source buffer to near-integer period
         if len(source_buffer) != to_bufsize(period):
             raise ValueError(
                 f"Buffer returned for tiling has length {len(source_buffer)} "
