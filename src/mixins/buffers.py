@@ -32,7 +32,7 @@ class TilingMixin:
         sample_start = to_frames(start if lower is None else max(lower, start))
 
         # tile the buffer enough to cover the sampleable range
-        n_tiles = ceil((sample_end-sample_start)/len(source_buffer))
+        n_tiles = ceil(abs(sample_end-sample_start-start)/len(source_buffer))
 
         # rotate the tiled buffer into the same index space as the output
         tiled_buffer = np.roll(np.tile(source_buffer, n_tiles+1), -start)

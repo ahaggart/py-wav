@@ -35,5 +35,31 @@
       "child": "dilated:0.5"
     },
     "factor": 2
+  },
+  {
+    "type": "var_offset",
+    "uuid": "var_offset",
+    "refs": {
+      "child": "wav",
+      "offset": "scaled_x"
+    }
+  },
+  {
+    "type": "sine",
+    "uuid": "sine",
+    "freq": 1.2
+  },
+  {
+    "type": "scaled",
+    "uuid": "scaled_x",
+    "refs": {
+      "child": "sine",
+      "factor": "constant_x"
+    }
+  },
+  {
+    "type": "constant",
+    "uuid": "constant_x",
+    "value": 0.15
   }
 ]

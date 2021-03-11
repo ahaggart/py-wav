@@ -225,5 +225,39 @@ signal periods. This logic is provided via `util.frames.to_bufsize()`.
 
 Q: How do we avoid buildup of rounding errors when many small
 buffers are involved?
-A:
-TilingMixin needs to upsample to near-integer period 
+A: When tiling a buffer, we need to upsample to near-integer period then
+downsample to the correct frame rate.
+
+Problem 13: Aperiodic signals
+
+Suppose we have a signal X whose output is the value of signal Y transformed
+according to the value of signal Z. Suppose Y is an unbounded signal, while Z is
+bounded by the range (A, B).
+
+So the value of X is f(Y,Z) for range (A, B), and Y for (-inf, A) and (B, inf).
+We cannot assign a true period to X, since it extends infinitely, nor can we
+compute an internal period, since there is a finite region transformed by Z.
+How can we proceed?
+
+Approach 1: Allow aperiodic signals.
+
+Q: What are the spectral characteristics of aperiodic signals?
+Q: Can we tile aperiodic signals?
+
+Conclusion: Aperiodic signals are inoperable for complex use cases. Rather than
+building around the expectation that `get_period` may return `None`, we should
+prevent the creation of aperiodic signals. See **Approach 3**.
+
+Approach 2: Use the bounds of the workspace.
+
+We can assign an internally-consistent period to an aperiodic signal by
+reporting a period large enough that no signal would ever sample outside of one
+period.
+
+Circular dependency problem
+
+Compute cost problem
+
+Approach 3: Do not allow aperiodic signals.
+
+Introduce `AperiodicResultError` for identifying these situations.

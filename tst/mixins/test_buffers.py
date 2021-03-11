@@ -85,6 +85,10 @@ class TilingMixinTest(TestCase):
             signal.get_temporal(self.fs, -40, 0),
         )
         self.assertEqualsNumpy(
+            np.array([3, 4, 5, 6, 7, 8, 9, 0, 1, 2] * 4),
+            signal.get_temporal(self.fs, -37, 3),
+        )
+        self.assertEqualsNumpy(
             np.array([8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0]),
             signal.get_temporal(self.fs, -2, 12),
         )
