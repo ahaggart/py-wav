@@ -41,11 +41,35 @@ traversed, including the cache for node "d".
 
 ### Architecture
 
-WorkspaceOrchestrator
-- SignalManager: Owns signal table an manages cache
-  - SignalCache
-- SignalGraph: Provides tools for traversing signal chains
-- (File Manager): Owns the serialized version of the workspace
+Workspace
+* Controls the signal workspace, connects components
+
+
+SignalManager
+* Owns signal table
+* Initializes signals
+
+SignalCache
+* Stores intermediate data for re-use
+* Falls back to SignalProvider on cache miss
+ 
+SignalGraph
+* Provides tools for traversing signal chains
+* Iterate signals in dependency order
+
+File Manager
+* Owns the serialized version of the workspace
+* Provides raw data access
+
+Startup:
+1. Load project file from disk
+1. Iterate signals -> add graph entries
+1. Traverse DAG -> initialize signals in dependency order
+
+Adding a signal:
+
+Removing a signal:
+
 
 ### Signals
 

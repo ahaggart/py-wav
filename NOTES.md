@@ -284,3 +284,5 @@ though this will add some complexity to signal graphs, using an explicit
 "set range" transform gives the user more leeway in the ordering of transforms.
 
 Solution: We will go with Approach 2.
+
+Problem 15: Should we allow unbounded signals?
