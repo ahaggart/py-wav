@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict
+from typing import Dict, Type
 
 from Signal import Signal
 from SignalCache import SignalCache, CachedSignal
@@ -8,9 +8,9 @@ from core.SignalProvider import SignalProvider
 
 
 class SignalManager(SignalProvider):
-    def __init__(self, cache: SignalCache):
+    def __init__(self, cache_factory: Type[SignalCache]):
         self.signals: Dict[str, Signal] = {}
-        self.cache = cache
+        self.cache = cache_factory(self)
         self.cache_nodes: Dict[str, CachedSignal] = {}
 
     def put_signal(self, signal: Signal):

@@ -9,8 +9,12 @@ class TestSignalGraph(TestCase):
         pass
 
     def assertOrder(self, order: List[str], a: str, b: str):
-        a_pos = order.index(a)
-        b_pos = order.index(b)
+        try:
+            a_pos = order.index(a)
+            b_pos = order.index(b)
+        except ValueError:
+            print(order)
+            raise
         self.assertTrue(
             a_pos < b_pos,
             msg=f"Position of {a} is not less than that of {b} : {order}"
@@ -25,10 +29,10 @@ class TestSignalGraph(TestCase):
         ])
 
         order = graph.sorted_topological()
-        self.assertOrder(order, "a", "b")
-        self.assertOrder(order, "a", "c")
-        self.assertOrder(order, "b", "d")
-        self.assertOrder(order, "c", "d")
+        self.assertOrder(order, "b", "a")
+        self.assertOrder(order, "c", "a")
+        self.assertOrder(order, "d", "b")
+        self.assertOrder(order, "d", "c")
 
     def test_traverse_linear(self):
         graph = SignalGraph([
@@ -39,9 +43,9 @@ class TestSignalGraph(TestCase):
         ])
 
         order = graph.sorted_topological()
-        self.assertOrder(order, "a", "b")
-        self.assertOrder(order, "b", "c")
-        self.assertOrder(order, "c", "d")
+        self.assertOrder(order, "b", "a")
+        self.assertOrder(order, "c", "b")
+        self.assertOrder(order, "d", "c")
 
     def test_traverse_cyclic(self):
         graph = SignalGraph([

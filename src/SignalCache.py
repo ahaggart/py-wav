@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import List, Dict, Type
+
+import logging
 
 from Signal import Signal
-from SignalContext import SignalContext
-from SignalRegistry import Registry
+from core.SignalProvider import SignalProvider
 from custom_types import Frames, FrameRange, Hz
+
+log = logging.getLogger(__name__)
 
 
 class CachedSignal(Signal):
@@ -33,48 +35,18 @@ class CachedSignal(Signal):
 
 
 class SignalCache:
-    def __init__(self,
-                 registry: Registry,
-                 signal_data: List[SignalContext]):
+    def __init__(self, provider: SignalProvider):
         self.temporal = {}
         self.spectral = {}
-        self.cache_nodes = self.create_cache_nodes(signal_data)
-        self.signals = self.create_signals(registry, signal_data)
-
-    def create_cache_nodes(self,
-                           signal_data: List[SignalContext]
-                           ) -> Dict[str, CachedSignal]:
-        cache_nodes = {}
-        for data in signal_data:
-            cache_nodes[data.uuid] = CachedSignal(data.uuid, self)
-        return cache_nodes
-
-    def create_signals(self,
-                       registry: Registry,
-                       signal_data: List[SignalContext]):
-        signals = {}
-        for data in signal_data:
-            data.set_refs(self.resolve_refs(data.raw_refs))
-            initializer = registry[data.type_name].ctor
-            signal = initializer(data)
-            if data.uuid in signals:
-                raise KeyError(f"Duplicate UUID {data.uuid} in signals")
-            signals[data.uuid] = signal
-        return signals
-
-    def resolve_refs(self, raw_refs: Dict[str, str]) -> Dict[str, Signal]:
-        return {name: self.cache_nodes[uuid] for name, uuid in raw_refs.items()}
-
-    def get_cache_node(self, uuid: str):
-        if uuid not in self.cache_nodes:
-            self.cache_nodes[uuid] = CachedSignal(uuid, self)
-        return self.cache_nodes[uuid]
+        self.provider = provider
 
     def get_signal(self, uuid: str):
-        return self.signals[uuid]
+        return self.provider.get_signal(uuid)
 
     def get_temporal(self, uuid: str, fs: Hz, start: Frames, end: Frames):
+        log.debug(f"Temporal request uuid={uuid} fs={fs} start={start} end={end}")
         return self.get_signal(uuid).get_temporal(fs, start, end)
 
     def get_spectral(self, uuid: str, fs: Hz):
+        log.debug(f"Spectral request uuid={uuid} fs={fs}")
         return self.get_signal(uuid).get_spectral(fs)
