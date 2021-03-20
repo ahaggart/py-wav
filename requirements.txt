@@ -3,3 +3,4 @@ sphinx
 bezier
 simpleaudio
 scipy
+matplotlib

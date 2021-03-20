@@ -1,13 +1,14 @@
 from Signal import Signal
-from SignalData import SignalData
+from SignalContext import SignalContext
+from SignalRegistry import register
 from custom_types import Frames, FrameRange, Seconds, Hz, Partial
 from mixins.domains import TemporalDomainHelper
 from util.frames import to_frames
 
 
 class OffsetSignal(TemporalDomainHelper, Signal):
-    def __init__(self, data: SignalData):
-        Signal.__init__(self, data)
+    def __init__(self, context: SignalContext):
+        Signal.__init__(self, context)
         TemporalDomainHelper.__init__(self)
 
         self.child = self.data.resolved_refs['child']
@@ -45,3 +46,9 @@ class OffsetSignal(TemporalDomainHelper, Signal):
     def get_temporal(self, fs: Hz, start: Frames, end: Frames):
         offset_frames = to_frames(self.get_offset_frames(fs))
         return self.child.get_temporal(fs, start-offset_frames, end-offset_frames)
+
+
+register(
+    name="offset",
+    ctor=OffsetSignal,
+)

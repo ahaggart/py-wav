@@ -1,5 +1,6 @@
 from Signal import Signal
-from SignalData import SignalData
+from SignalContext import SignalContext
+from SignalRegistry import register
 from custom_types import FrameRange, Hz, Partial
 from mixins.buffers import TilingMixin
 from mixins.domains import TemporalDomainHelper
@@ -7,8 +8,8 @@ from util.buffer import get_centered_sample
 
 
 class TiledSignal(TilingMixin, TemporalDomainHelper, Signal):
-    def __init__(self, data: SignalData):
-        Signal.__init__(self, data)
+    def __init__(self, context: SignalContext):
+        Signal.__init__(self, context)
         TemporalDomainHelper.__init__(self)
         TilingMixin.__init__(self)
         self.child = self.data.resolved_refs['child']
@@ -31,3 +32,9 @@ class TiledSignal(TilingMixin, TemporalDomainHelper, Signal):
 
     def get_buffer(self, fs: Hz):
         return get_centered_sample(self.child, fs)
+
+
+register(
+    name="tiled",
+    ctor=TiledSignal,
+)

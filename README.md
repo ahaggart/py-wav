@@ -39,16 +39,13 @@ dependency DAG. If changes are made to node "f", we must invalidate the buffer
 cache for "f", then walk the cache DAG and invalidate any other buffer caches
 traversed, including the cache for node "d".
 
-### Framework
+### Architecture
 
-Signal -> Reference Node -> Signal Manager -> Cache Node -> Cache -> Signal
-
-`SignalCache`
-* owns uuid map?
-* signal cache should be operate behind reference table
-
-`SignalManager`
-* owns reference map
+WorkspaceOrchestrator
+- SignalManager: Owns signal table an manages cache
+  - SignalCache
+- SignalGraph: Provides tools for traversing signal chains
+- (File Manager): Owns the serialized version of the workspace
 
 ### Signals
 

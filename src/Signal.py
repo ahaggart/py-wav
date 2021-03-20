@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import SignalData
+import SignalContext
 from custom_types import Frames, FrameRange, Hz, Partial
 
 
 class Signal:
-    def __init__(self, data: SignalData.SignalData):
-        self.data = data
+    def __init__(self, context: SignalContext.SignalContext):
+        self.data = context
 
     def get_temporal(self, fs: Hz, start: Frames, end: Frames):
         raise NotImplementedError

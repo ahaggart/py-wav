@@ -3,18 +3,19 @@ import wave
 import numpy as np
 
 from Signal import Signal
-from SignalData import SignalData
+from SignalContext import SignalContext
+from SignalRegistry import register
 from custom_types import Hz
 from mixins.buffers import TilingMixin, DilatingMixin
 from mixins.domains import TemporalDomainHelper
 
 
 class WavSignal(TemporalDomainHelper, DilatingMixin, Signal):
-    def __init__(self, data: SignalData):
-        Signal.__init__(self, data)
+    def __init__(self, context: SignalContext):
+        Signal.__init__(self, context)
         TemporalDomainHelper.__init__(self)
         TilingMixin.__init__(self)
-        self.file = data.data['file']
+        self.file = context.data['file']
         self.buffer = None
         self.source_fs: Hz = None
 
@@ -34,3 +35,9 @@ class WavSignal(TemporalDomainHelper, DilatingMixin, Signal):
         if self.buffer is None:
             self.load_source()
         return self.source_fs
+
+
+register(
+    name="wav",
+    ctor=WavSignal,
+)

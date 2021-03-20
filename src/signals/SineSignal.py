@@ -1,14 +1,15 @@
 import numpy as np
 
 from Signal import Signal
-from SignalData import SignalData
+from SignalContext import SignalContext
+from SignalRegistry import register
 from custom_types import Frames, Hz, Partial, FrameRange
 from mixins.domains import TemporalDomainHelper
 
 
 class SineSignal(TemporalDomainHelper, Signal):
-    def __init__(self, data: SignalData):
-        Signal.__init__(self, data)
+    def __init__(self, context: SignalContext):
+        Signal.__init__(self, context)
         TemporalDomainHelper.__init__(self)
         self.freq = Hz(self.data.data['freq'])
 
@@ -20,3 +21,9 @@ class SineSignal(TemporalDomainHelper, Signal):
 
     def get_range(self, fs: Hz) -> FrameRange:
         return None, None
+
+
+register(
+    name="sine",
+    ctor=SineSignal,
+)

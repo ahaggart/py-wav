@@ -2,7 +2,8 @@ from __future__ import annotations
 from typing import List, Dict, Type
 
 from Signal import Signal
-from SignalData import SignalData
+from SignalContext import SignalContext
+from SignalRegistry import Registry
 from custom_types import Frames, FrameRange, Hz
 
 
@@ -33,15 +34,15 @@ class CachedSignal(Signal):
 
 class SignalCache:
     def __init__(self,
-                 initializers: Dict[str, Type[Signal]],
-                 signal_data: List[SignalData]):
+                 registry: Registry,
+                 signal_data: List[SignalContext]):
         self.temporal = {}
         self.spectral = {}
         self.cache_nodes = self.create_cache_nodes(signal_data)
-        self.signals = self.create_signals(initializers, signal_data)
+        self.signals = self.create_signals(registry, signal_data)
 
     def create_cache_nodes(self,
-                           signal_data: List[SignalData]
+                           signal_data: List[SignalContext]
                            ) -> Dict[str, CachedSignal]:
         cache_nodes = {}
         for data in signal_data:
@@ -49,12 +50,12 @@ class SignalCache:
         return cache_nodes
 
     def create_signals(self,
-                       initializers: Dict[str, Type[Signal]],
-                       signal_data: List[SignalData]):
+                       registry: Registry,
+                       signal_data: List[SignalContext]):
         signals = {}
         for data in signal_data:
             data.set_refs(self.resolve_refs(data.raw_refs))
-            initializer = initializers[data.type_name]
+            initializer = registry[data.type_name].ctor
             signal = initializer(data)
             if data.uuid in signals:
                 raise KeyError(f"Duplicate UUID {data.uuid} in signals")

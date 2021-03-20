@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List
 
 from Signal import Signal
-from SignalData import SignalData
+from SignalContext import SignalContext
 from custom_types import Frames, FrameRange
 
 
@@ -36,11 +36,11 @@ class SignalGraphEdge:
 
 
 class SignalGraph:
-    def __init__(self, signal_data: List[SignalData]):
+    def __init__(self, signal_data: List[SignalContext]):
         self.edges = SignalGraph.create_edges(signal_data)
 
     @staticmethod
-    def create_edges(signal_data: List[SignalData]) -> List[SignalGraphEdge]:
+    def create_edges(signal_data: List[SignalContext]) -> List[SignalGraphEdge]:
         edges = []
         for data in signal_data:
             from_uuid = data.uuid

@@ -260,4 +260,27 @@ Compute cost problem
 
 Approach 3: Do not allow aperiodic signals.
 
-Introduce `AperiodicResultError` for identifying these situations.
+Introduce `AperiodicResultException` for identifying these situations.
+
+Solution: We will go with Approach 3.
+
+Problem 14: Offset range
+
+Suppose we offset a signal with range (X, Y) by Z. What is the range of the
+transformed signal?
+
+Approach 1: Include the offset in the new range.
+
+This approach is appealing because the offset will be included in operations
+such as tiling and fourier analysis, which is intuitive.
+
+On the other hand, including the offset in the range means users must structure
+their signal chains to account for offsets when doing spectral operations.
+
+Approach 2: Do not include the offset in the new range.
+
+We can still achieve intuitive tiling behaviors with a "set range" source. This
+though this will add some complexity to signal graphs, using an explicit
+"set range" transform gives the user more leeway in the ordering of transforms.
+
+Solution: We will go with Approach 2.

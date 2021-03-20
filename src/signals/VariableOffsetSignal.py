@@ -3,7 +3,8 @@ from typing import Optional
 import numpy as np
 
 from Signal import Signal
-from SignalData import SignalData
+from SignalContext import SignalContext
+from SignalRegistry import register
 from core.throwables import AperiodicResultException
 from custom_types import Hz, Frames, FrameRange, Partial
 from mixins.domains import TemporalDomainHelper
@@ -12,8 +13,8 @@ from util.frames import to_frames, np_to_frames
 
 
 class VariableOffsetSignal(TemporalDomainHelper, Signal):
-    def __init__(self, data: SignalData):
-        Signal.__init__(self, data)
+    def __init__(self, context: SignalContext):
+        Signal.__init__(self, context)
         TemporalDomainHelper.__init__(self)
         self.child = self.data.resolved_refs['child']
         self.offset = self.data.resolved_refs['offset']
@@ -135,3 +136,9 @@ class VariableOffsetSignal(TemporalDomainHelper, Signal):
         offsets = get_centered_sample(self.offset, fs) * fs
         positions = np.arange(len(offsets)) * fs
         return np.max(offsets+positions)
+
+
+register(
+    name="var_offset",
+    ctor=VariableOffsetSignal,
+)

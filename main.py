@@ -1,22 +1,16 @@
 import json
-from typing import Dict, Type
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from Signal import Signal
+# noinspection PyUnresolvedReferences
+import signals as _
 from SignalCache import SignalCache
-from SignalData import SignalData
+from SignalContext import SignalContext
 from SignalGraph import SignalGraph
 from SignalManager import SignalManager
+from SignalRegistry import get_registry
 from output import play_signal
-from signals.ConstantSignal import ConstantSignal
-from signals.DilatedSignal import DilatedSignal
-from signals.OffsetSignal import OffsetSignal
-from signals.ScaledSignal import ScaledSignal
-from signals.SineSignal import SineSignal
-from signals.VariableOffsetSignal import VariableOffsetSignal
-from signals.WavSignal import WavSignal
 from util.frames import to_frames
 
 fs = 44100
@@ -24,20 +18,11 @@ fs = 44100
 with open("resources/signals.json") as f:
     signals_raw = json.load(f)
 
-signal_data = [SignalData(d) for d in signals_raw]
+signal_data = [SignalContext(d) for d in signals_raw]
 
-initializers: Dict[str, Type[Signal]] = {
-    "wav": WavSignal,
-    "offset": OffsetSignal,
-    "dilated": DilatedSignal,
-    "var_offset": VariableOffsetSignal,
-    "sine": SineSignal,
-    "scaled": ScaledSignal,
-    "constant": ConstantSignal,
-}
-
+registry = get_registry()
 graph = SignalGraph(signal_data)
-cache = SignalCache(initializers, signal_data)
+cache = SignalCache(registry, signal_data)
 manager = SignalManager(graph, cache)
 
 signals = cache.signals

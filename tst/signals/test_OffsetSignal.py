@@ -1,6 +1,6 @@
 from typing import List
 
-from SignalData import SignalData
+from SignalContext import SignalContext
 from custom_types import Seconds
 from signals.BufferSignal import BufferSignal
 from signals.OffsetSignal import OffsetSignal
