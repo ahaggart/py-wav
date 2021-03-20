@@ -21,9 +21,9 @@ with open("resources/signals.json") as f:
 signal_data = [SignalContext(d) for d in signals_raw]
 
 registry = get_registry()
-graph = SignalGraph(signal_data)
+graph = SignalGraph()
 cache = SignalCache(registry, signal_data)
-manager = SignalManager(graph, cache)
+manager = SignalManager(cache)
 
 signals = cache.signals
 

@@ -1,49 +1,55 @@
 from __future__ import annotations
 
-from typing import List
-
-from Signal import Signal
-from SignalContext import SignalContext
-from custom_types import Frames, FrameRange
+from typing import List, Dict, Set, Generator
 
 
-class DummySignal(Signal):
-    def __init__(self):
-        Signal.__init__(self, None, None)
-        self.child = None
-
-    def set_child(self, child: Signal) -> None:
-        self.child = child
-
-    def get_range(self, fs: Frames) -> FrameRange:
-        return self.child.get_range(fs)
-
-    def get_spectral(self, fs: Frames):
-        return self.child.get_spectral(fs)
-
-    def get_temporal(self, fs: Frames, start: Frames, end: Frames):
-        return self.child.get_temporal(fs, start, end)
-
-    def get_period(self, fs: Frames) -> Frames:
-        return self.child.get_period(fs)
+class Vertex:
+    def __init__(self, uuid: str, edges: List[str]):
+        self.uuid = uuid
+        self.edges = edges
 
 
-class SignalGraphEdge:
-    def __init__(self, from_uuid: str, to_uuid: str, domain: str = None):
-        self.from_uuid = from_uuid
-        self.to_uuid = to_uuid
-        self.domain = domain
+class CyclicGraphException(Exception):
+    pass
 
 
 class SignalGraph:
-    def __init__(self, signal_data: List[SignalContext]):
-        self.edges = SignalGraph.create_edges(signal_data)
+    def __init__(self, vertices: List[Vertex] = None):
+        self.vertices: Dict[str, Vertex] = {}
+        if vertices is not None:
+            for v in vertices:
+                self.vertices[v.uuid] = v
 
-    @staticmethod
-    def create_edges(signal_data: List[SignalContext]) -> List[SignalGraphEdge]:
-        edges = []
-        for data in signal_data:
-            from_uuid = data.uuid
-            for to_uuid in data.raw_refs.values():
-                edges.append(SignalGraphEdge(from_uuid, to_uuid))
-        return edges
+    def put_vertex(self, uuid: str, edges: List[str]):
+        self.vertices[uuid] = Vertex(uuid, edges)
+
+    def traverse(self) -> Generator[str]:
+        """Topological traversal of the signal DAG"""
+        for v in self.sorted_topological():
+            yield v.uuid
+
+    def sorted_topological(self):
+        perm: Set[str] = set()
+        temp: Set[str] = set()
+        unmarked = set(self.vertices.values())
+        result: List[Vertex] = []
+
+        def visit(v: Vertex):
+            if v.uuid in perm:
+                return
+            if v.uuid in temp:
+                raise CyclicGraphException("Not a DAG")
+            temp.add(v.uuid)
+
+            for edge in v.edges:
+                visit(self.vertices[edge])
+
+            temp.remove(v.uuid)
+            perm.add(v.uuid)
+            result.insert(0, v)
+
+        while len(unmarked) > 0:
+            vertex = unmarked.pop()
+            visit(vertex)
+
+        return result
