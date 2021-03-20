@@ -37,16 +37,17 @@ var_offset_signal = manager.get_signal('var_offset')
 sine_signal = manager.get_signal('sine')
 selected_signal = var_offset_signal
 
+dur = to_frames(offset_signal.get_range(fs)[1])
+
 diff = np.abs(np.subtract(
-    base_signal.get_temporal(fs, 0, to_frames(base_signal.get_period(fs))),
-    var_offset_signal.get_temporal(fs, 0, to_frames(base_signal.get_period(fs))),
+    base_signal.get_temporal(fs, 0, dur),
+    restored_signal.get_temporal(fs, 0, dur),
 ))
 
 PLOT = True
 
 if PLOT:
     extras = 1
-    dur = to_frames(dilated_signal.get_period(fs))
     fig, (ax) = plt.subplots(len(signals)+extras, 1)
     ax[0].plot(diff)
     for i, signal in zip(range(len(signals)), signals.values()):

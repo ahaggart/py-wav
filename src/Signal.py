@@ -14,8 +14,5 @@ class Signal:
     def get_spectral(self, fs: Hz):
         raise NotImplementedError
 
-    def get_period(self, fs: Hz) -> Partial:
-        raise NotImplementedError
-
     def get_range(self, fs: Hz) -> FrameRange:
         raise NotImplementedError

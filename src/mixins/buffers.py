@@ -16,16 +16,10 @@ class TilingMixin:
     @DynamicAttrs
     """
     def get_temporal(self, fs: Hz, start: Frames, end: Frames):
-        period = self.get_period(fs)
         source_buffer = self.get_buffer(fs)
         lower, upper = self.get_range(fs)
 
         # TODO: upsample source buffer to near-integer period
-        if len(source_buffer) != to_bufsize(period):
-            raise ValueError(
-                f"Buffer returned for tiling has length {len(source_buffer)} "
-                f"which is not suitable for period {period}"
-            )
 
         # compute the sampleable range of the signal
         sample_end = to_frames(end if upper is None else min(upper, end))
@@ -67,9 +61,6 @@ class DilatingMixin(TilingMixin):
     def get_duration(self, fs: Hz) -> Partial:
         return len(self.get_source_buffer()) * fs / self.get_source_fs()
 
-    def get_period(self, fs: Hz) -> Partial:
-        return self.get_duration(fs)
-
     def get_range(self, fs: Hz) -> FrameRange:
         return 0, self.get_duration(fs)
 
@@ -77,4 +68,25 @@ class DilatingMixin(TilingMixin):
         raise NotImplementedError
 
     def get_source_fs(self) -> Partial:
+        raise NotImplementedError
+
+
+class TruncatingMixin:
+    """Utility mixin for finite signals which are zero-valued when out of range.
+
+    Subclasses must implement `get_temporal_checked`, which TruncatingMixin uses
+    to provide a get_temporal` implementation with the following behavior:
+    @DynamicAttrs
+    """
+    def get_temporal(self, fs: Hz, start: Frames, end: Frames):
+        lower, upper = self.get_range(fs)
+        sample_start = min(max(start, lower), upper)
+        sample_end = min(max(end, lower), upper)
+        internal = self.get_temporal_checked(fs, sample_start, sample_end)
+        output = np.zeros(end-start)
+        offset = sample_start-start
+        output[offset:offset+sample_end] = internal
+        return output
+
+    def get_temporal_checked(self, fs: Hz, start: Frames, end: Frames):
         raise NotImplementedError

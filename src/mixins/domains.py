@@ -23,12 +23,6 @@ class TemporalDomainHelper:
     @DynamicAttrs
     """
     def get_spectral(self, fs: Hz):
-        lower, upper = self.get_range(fs)
-        period = self.get_period(fs)
-        if upper-lower < period:
-            raise ValueError(
-                f"Given range ({lower}, {upper}) does not cover period {period}"
-            )
         buffer = get_centered_sample(self, fs)
         return to_spectral(fs, buffer)
 

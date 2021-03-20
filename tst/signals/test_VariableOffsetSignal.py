@@ -39,7 +39,6 @@ class TestVariableOffsetSignal(SignalTestCase):
             [1, 2, 3, 4, 5],
             [0, 0, 0, 0, 0],
         )
-        self.assertEqual(5, signal.get_period(self.test_fs))
         self.assertEqual((0, 5), signal.get_range(self.test_fs))
         self.assertEqualsNumpy(
             [1, 2, 3, 4, 5],
@@ -59,7 +58,6 @@ class TestVariableOffsetSignal(SignalTestCase):
             [1, 2, 3, 4, 5],
             [1, 1, 1, 1, 1, 1],
         )
-        self.assertEqual(6, signal.get_period(self.test_fs))
         self.assertEqual((0, 6), signal.get_range(self.test_fs))
         self.assertEqualsNumpy(
             [0, 1, 2, 3, 4, 5],
@@ -79,7 +77,6 @@ class TestVariableOffsetSignal(SignalTestCase):
             [1, 2, 3, 4, 5],
             [-1, -1, -1, -1, -1, -1], -1
         )
-        self.assertEqual(6, signal.get_period(self.test_fs))
         self.assertEqual((-1, 5), signal.get_range(self.test_fs))
         self.assertEqualsNumpy(
             [1, 2, 3, 4, 5, 0],
@@ -99,7 +96,6 @@ class TestVariableOffsetSignal(SignalTestCase):
             [+0,  1,  2,  3,  4,  5,  6,  7,  8,  9],
             [-1, -1, -1,  0,  0,  0,  0,  0,  1,  1],
         )
-        self.assertEqual(10, signal.get_period(self.test_fs))
         self.assertEqual((0, 10), signal.get_range(self.test_fs))
         self.assertEqualsNumpy(
             [1, 2, 3, 3, 4, 5, 6, 7, 7, 8],
@@ -115,7 +111,6 @@ class TestVariableOffsetSignal(SignalTestCase):
             [+0,  1,  2,  3,  4,  5,  6,  7,  8,  9],
             [+1,  1,  0,  0,  0,  0,  0,  0, -1, -1],
         )
-        self.assertEqual(10, signal.get_period(self.test_fs))
         self.assertEqual((0, 10), signal.get_range(self.test_fs))
         self.assertEqualsNumpy(
             [0, 0, 2, 3, 4, 5, 6, 7, 9, 0],
@@ -131,7 +126,6 @@ class TestVariableOffsetSignal(SignalTestCase):
             [+0,  1,  2,  3,  4,  5,  6,  7,  8,  9],
             [+0,  0,  0,  0,  6, -6,  0,  0,  0,  0],
         )
-        self.assertEqual(10, signal.get_period(self.test_fs))
         self.assertEqual((0, 10), signal.get_range(self.test_fs))
         self.assertEqualsNumpy(
             [0, 1, 2, 3, 0, 0, 6, 7, 8, 9],
@@ -143,7 +137,6 @@ class TestVariableOffsetSignal(SignalTestCase):
             [+0,  1,  2,  3,  4],
             [+0,  0,  0,  0,  0,  0,  0,  0,  0,  5],
         )
-        self.assertEqual(10, signal.get_period(self.test_fs))
         self.assertEqual((0, 10), signal.get_range(self.test_fs))
         self.assertEqualsNumpy(
             [0, 1, 2, 3, 4, 0, 0, 0, 0, 4],
@@ -159,7 +152,6 @@ class TestVariableOffsetSignal(SignalTestCase):
             [+0,  1,  2,  3,  4],
             [-6,  0,  0,  0,  0,  0,  0,  0,  0,  0], -5
         )
-        self.assertEqual(10, signal.get_period(self.test_fs))
         self.assertEqual((-5, 5), signal.get_range(self.test_fs))
         self.assertEqualsNumpy(
             [1, 0, 0, 0, 0, 0, 1, 2, 3, 4],

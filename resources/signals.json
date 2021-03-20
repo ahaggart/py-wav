@@ -47,7 +47,8 @@
   {
     "type": "sine",
     "uuid": "sine",
-    "freq": 1.2
+    "freq": 1.2,
+    "dur": 5
   },
   {
     "type": "scaled",

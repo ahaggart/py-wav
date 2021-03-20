@@ -193,7 +193,3 @@ class TilingMixinTest(TestCase):
             np.array([2, 3, 4, 5, 6, 7, 8, 9, 0, 1] * 2),
             signal.get_temporal(self.fs, -18, 2),
         )
-
-    def test_invalid_base(self):
-        signal = TestBase(10, 0, 10, 12)
-        self.assertRaises(ValueError, signal.get_temporal, self.fs, 0, 10)

@@ -9,7 +9,6 @@ from util.frames import to_frames
 class OffsetSignal(TemporalDomainHelper, Signal):
     def __init__(self, context: SignalContext):
         Signal.__init__(self, context)
-        TemporalDomainHelper.__init__(self)
 
         self.child = self.data.resolved_refs['child']
         self.offset: Seconds = Seconds(self.data.data['offset'])
@@ -21,27 +20,7 @@ class OffsetSignal(TemporalDomainHelper, Signal):
         child_lower, child_upper = self.child.get_range(fs)
         offset_frames = self.get_offset_frames(fs)
 
-        if offset_frames > 0:
-            return (
-                child_lower,
-                child_upper + offset_frames if child_upper is not None else None,
-            )
-        else:
-            return (
-                child_lower + offset_frames if child_lower is not None else None,
-                child_upper,
-            )
-
-    def get_period(self, fs: Hz) -> Partial:
-        """Return the period of the offset signal.
-
-        If the child signal is unbounded, return the child's period.
-        If the child signal is bounded, return the range as period.
-        """
-        lower, upper = self.get_range(fs)
-        if lower is None or upper is None:
-            return self.child.get_period(fs)
-        return upper - lower
+        return child_lower+offset_frames, child_upper+offset_frames
 
     def get_temporal(self, fs: Hz, start: Frames, end: Frames):
         offset_frames = to_frames(self.get_offset_frames(fs))

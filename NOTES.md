@@ -286,3 +286,42 @@ though this will add some complexity to signal graphs, using an explicit
 Solution: We will go with Approach 2.
 
 Problem 15: Should we allow unbounded signals?
+
+Consideration 1: Aperiodic signals
+
+Allowing unbounded signals leads us to the issue of "aperiodic" signals, which
+substantially increases both  the complexity of signal implementations and the
+tooling we must build to help users deal with aperiodic signals in their
+workspace.
+
+In the simple case, a user adds a new signal to the workspace that resolves as
+aperiodic. Remediating this is simple: (1) revert the creation of the signal and
+(2) provide instructions to manipulate source signals to prevent aperiodic
+results.
+
+More complex cases arise with chains of signals whose range is dependent on that
+of their sources. A user might modify a signal in one place and find that a
+different signal farther up the signal chain *becomes* aperiodic as a result.
+Remediating this is not simple. While reverting the modification would certainly
+resolve the issue, it is difficult to issue guidance on preventing the issue
+from occurring again, 
+
+Consideration 2: Pure Parameters
+
+The core consideration to allowing unbounded signals is for their use as
+"pure parameters", either as constants or as basic waveforms. Requiring bounds
+to be set for all signals makes our pure parameter ergonomics worse:
+1. If the base signal's range changes, the parameters range must be adjusted
+accordingly.
+1. The data models of simple signals becomes bloated with range information.
+
+On the other hand, the ergonomic issues given above are less concerning than the
+potential difficulty in resolving aperiodic signal chains, discussed above.
+
+Consideration 3: Period vs Range
+
+In order to support unbounded signals, we include both a period and a range in
+the Signal interface. Period is only useful for unbounded signals, and is
+generally derived from the range for bounded signals.
+
+Solution: We will not allow unbounded signals.
