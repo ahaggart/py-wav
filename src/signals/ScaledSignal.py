@@ -1,7 +1,7 @@
 import numpy as np
 
 from SignalContext import SignalContext
-from SignalRegistry import register, RegistryEntry
+from SignalRegistry import register
 from custom_types import Frames, Hz
 from mixins.domains import TemporalDomainHelper
 from signals.DerivedSignal import DerivedSignal

@@ -1,12 +1,12 @@
-Problem 1: Spectral-first signals must have a temporal component.
+## Problem 1: Spectral-first signals must have a temporal component.
 * convert spectral signal to temporal domain
 * get bounds from child
 
-Problem 2: Parametrized inputs.
+## Problem 2: Parametrized inputs.
 
 moot
 
-Problem 3: Templating
+## Problem 3: Templating
 
 Suppose an end user wants to copy and reuse a set of signals. How can we support
 this?
@@ -33,7 +33,7 @@ Pro:
 Con:
 * Components cannot be manipulated in groups without additional support.
 
-Problem 4: Scaling and Sliding
+## Problem 4: Scaling and Sliding
 
 All signals have an offset of 0.
 
@@ -47,7 +47,7 @@ y| yyyyy0000000
 z| 0000000yyyyy
 ```
 
-Problem 5: "Deep Sampling"
+## Problem 5: "Deep Sampling"
 
 Suppose we have a signal W sampled into the workspace by signal X, and a
 signal Y sampled into the workspace by signal Z. Can we sample W into Y
@@ -91,7 +91,7 @@ Takeaways:
 * Direct sampling allows for a much simpler Signal model.
 * Direct sampling imposes some restrictions on the topography of the graph.
 
-Problem 6: Signal substitution
+## Problem 6: Signal substitution
 
 Suppose signal Y samples signal x. We would like to apply a transform Z to X
 before it is consumed by Y. How can we support this?
@@ -102,7 +102,7 @@ signal X. To insert our transform, create the signal Z holding reference B.
 Update the signal manager such that reference A resolves to signal Z, and 
 reference B resolves to signal X.
 
-Problem 7: Transform minimization
+## Problem 7: Transform minimization
 
 Suppose we have a chain of signals V -> W -> X -> Y -> Z, where W and Y are
 spectral-primary signals and V, X, and Z are temporal-primary signals. To
@@ -123,12 +123,12 @@ signal manager.
 
 `resolve_reference(uuid, domain: Optional[str]=None)`
 
-Problem 8: Rendering
+## Problem 8: Rendering
 
 Rendering will be done in the context of a selected node. All child nodes of the
 selected node will be shown.
 
-Problem 9: Discrete fourier analysis of signals unbounded in one direction
+## Problem 9: Discrete fourier analysis of signals unbounded in one direction
 
 At a high level there are three cases for discrete fourier analysis:
 1. Bounded in both directions
@@ -146,7 +146,7 @@ the non-zero regions.
 When spectral-dominated signals are converted back to the temporal domain, they
 should respect the values given by `get_range`.
 
-Problem 10: Range creep
+## Problem 10: Range creep
 
 OffsetSignal extends the range of its child in the direction of offset. These
 extensions compound with multiple offsets.
@@ -162,7 +162,7 @@ We cannot easily remove range creep without violating encapsulation. In
 situations where range creep is a problem, such as tiling, the workaround is
 to use a TruncatedSignal to manually set the range.
 
-Problem 11: Parameter types
+## Problem 11: Parameter types
 
 For many derived signals we would like to be able to transform the child signal
 according some other input signal. For example, we may want to scale the child
@@ -203,7 +203,7 @@ in the signal graph.
 
 Decision: We will go with (Approach 3).
 
-Problem 12: Frame rounding
+## Problem 12: Frame rounding
 
 When sampling a signal, we provide an integer `start` and `end` to ensure that
 the output buffer size is always known. A problem arises when dealing with frame
@@ -228,7 +228,7 @@ buffers are involved?
 A: When tiling a buffer, we need to upsample to near-integer period then
 downsample to the correct frame rate.
 
-Problem 13: Aperiodic signals
+## Problem 13: Aperiodic signals
 
 Suppose we have a signal X whose output is the value of signal Y transformed
 according to the value of signal Z. Suppose Y is an unbounded signal, while Z is
@@ -264,7 +264,7 @@ Introduce `AperiodicResultException` for identifying these situations.
 
 Solution: We will go with Approach 3.
 
-Problem 14: Offset range
+## Problem 14: Offset range
 
 Suppose we offset a signal with range (X, Y) by Z. What is the range of the
 transformed signal?
@@ -285,7 +285,7 @@ though this will add some complexity to signal graphs, using an explicit
 
 Solution: We will go with Approach 2.
 
-Problem 15: Should we allow unbounded signals?
+## Problem 15: Should we allow unbounded signals?
 
 Consideration 1: Aperiodic signals
 
@@ -325,3 +325,17 @@ the Signal interface. Period is only useful for unbounded signals, and is
 generally derived from the range for bounded signals.
 
 Solution: We will not allow unbounded signals.
+
+## Problem 16: Live Input
+
+1. Investigate whether this is feasible with numpy/scipy only.
+  1. https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin2.html#scipy.signal.firwin2
+1. Investigate if this fits into the current processing model.
+  1. Need a concept of "causal" signals - statically or dynamically determined?
+  1. How does this interact with caching?
+1. Does this impose limitations on the frontend?
+
+## Problem 17: Input Devices
+
+1. How do we support MIDI?
+  1. Option: MIDI as constants. Need a way to identify MIDI constants (tags?).
