@@ -74,7 +74,7 @@ if DRAW_COMPONENTS:
         ax[i + num_pre_cmp].plot(buf)
         ax[i + num_pre_cmp].plot(np.real(env.get_buffer(fs, 0, dur)))
     plt.show()
+else:
+    final_source = out_source
 
-final_source = out_source
-
-play_from_source(final_source, fs, START_FRAME, END_FRAME if END_FRAME is not None else dur)
+    play_from_source(final_source, fs, START_FRAME, END_FRAME if END_FRAME is not None else dur)

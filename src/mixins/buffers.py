@@ -80,12 +80,11 @@ class TruncatingMixin:
     """
     def get_temporal(self, fs: Hz, start: Frames, end: Frames):
         lower, upper = self.get_range(fs)
-        sample_start = min(max(start, lower), upper)
-        sample_end = min(max(end, lower), upper)
+        sample_start = to_frames(min(max(start, lower), upper))
+        sample_end = to_frames(min(max(end, lower), upper))
         internal = self.get_temporal_checked(fs, sample_start, sample_end)
         output = np.zeros(end-start)
-        offset = sample_start-start
-        output[offset:offset+sample_end] = internal
+        output[sample_start-start:sample_end-start] = internal
         return output
 
     def get_temporal_checked(self, fs: Hz, start: Frames, end: Frames):

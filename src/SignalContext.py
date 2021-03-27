@@ -17,3 +17,9 @@ class SignalContext:
 
     def set_ref(self, name: str, signal: Signal.Signal):
         self.resolved_refs[name] = signal
+
+    @classmethod
+    def with_refs(cls, data: Dict, refs: Dict[str, Signal.Signal]):
+        ctx = SignalContext(data)
+        ctx.set_refs(refs)
+        return ctx

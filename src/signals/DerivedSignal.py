@@ -16,8 +16,5 @@ class DerivedSignal(Signal):
     def get_temporal(self, fs: Hz, start: Frames, end: Frames):
         return self.child.get_temporal(fs, start, end)
 
-    def get_period(self, fs: Hz) -> Partial:
-        return self.child.get_period(fs)
-
     def get_range(self, fs: Hz) -> FrameRange:
         return self.child.get_range(fs)
