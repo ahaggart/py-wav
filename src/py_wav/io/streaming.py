@@ -1,39 +1,33 @@
 from __future__ import annotations
 
-import multiprocessing
 import signal
-import threading
 import time
 import uuid
-from multiprocessing.queues import Queue
-from typing import Optional, NewType
+from multiprocessing import Queue, Value, Process
+from threading import Thread
+from typing import Generator, Optional, TypeVar, Generic
 
-import pyaudio
-
-import numpy as np
-from pyaudio import Stream
-
-from custom_types import Frames, Hz
+from custom_types import Frames
 
 
 class MetadataTimer:
     def __init__(self):
         self.time = None
-        self.start = None
-        self.end = None
+        self.start_time = None
+        self.end_time = None
 
-    def start_timer(self):
-        self.start = time.time_ns()
+    def start(self):
+        self.start_time = time.time_ns()
 
-    def stop_timer(self):
-        self.end = time.time_ns()
-        self.time = self.end - self.start
+    def stop(self):
+        self.end_time = time.time_ns()
+        self.time = self.end_time - self.start_time
 
     def __enter__(self):
-        self.start_timer()
+        self.start()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.stop_timer()
+        self.stop()
 
 
 class ChunkMetadata:
@@ -45,6 +39,8 @@ class ChunkMetadata:
         self.input_time = MetadataTimer()
         self.output_time = MetadataTimer()
         self.round_trip_time = MetadataTimer()
+        self.input_wait = MetadataTimer()
+        self.output_wait = MetadataTimer()
 
 
 class StreamChunk:
@@ -53,82 +49,63 @@ class StreamChunk:
         self.metadata = metadata
 
 
-class PyAudioStreaming:
-    def __init__(self, fs: Hz, channels: int, chunk_size: Frames):
-        self.chunk_size = chunk_size
-        self.fs = int(fs)
-        self.channels = int(channels)
-        self.running = multiprocessing.Value('i', 0)
+T = TypeVar("T")
 
-    def read_input(self,
-                   audio_in: Stream,
-                   buffer_out: Queue[Optional[StreamChunk]]):
-        print("starting input")
-        cur_frame = 0
-        while self.running.value == 1:
-            metadata = ChunkMetadata(
-                start=cur_frame,
-                end=cur_frame + self.chunk_size,
-            )
 
-            in_data = audio_in.read(self.chunk_size)
-            with metadata.input_time:
-                buf = np.frombuffer(in_data, dtype=np.float32)
+class ChunkStream(Generic[T]):
+    def __init__(self, max_depth=0):
+        self.queue: Queue[Optional[T]] = Queue(maxsize=max_depth)
 
-            chunk = StreamChunk(buf, metadata=metadata)
-            metadata.round_trip_time.start_timer()
-            buffer_out.put(chunk)
-            cur_frame += self.chunk_size
-        buffer_out.put(None)
-        print("finished input")
+    def __iter__(self) -> Generator[T]:
+        for chunk in iter(self.get, None):
+            yield chunk
 
-    def write_output(self,
-                     buffer_in: Queue[Optional[StreamChunk]],
-                     audio_out: Stream,
-                     metadata_out: Queue[Optional[ChunkMetadata]]):
-        print("starting output")
-        for chunk in iter(buffer_in.get, None):
-            chunk.metadata.round_trip_time.stop_timer()
-            with chunk.metadata.output_time:
-                frames = chunk.buf.astype(np.float32).tobytes()
-                audio_out.write(frames, num_frames=len(chunk.buf))
-            if metadata_out is not None:
-                metadata_out.put(chunk.metadata)
-        if metadata_out is not None:
-            metadata_out.put(None)
-        print("finished output")
+    def get(self, block=True, timeout=None):
+        return self.queue.get(block=block, timeout=timeout)
+
+    def put(self, chunk: Optional[T], block=True, timeout=None):
+        self.queue.put(chunk, block=block, timeout=timeout)
+
+    def close(self):
+        self.put(None)
+
+
+class AudioChunkStream(ChunkStream[StreamChunk]):
+    pass
+
+
+class MetadataChunkStream(ChunkStream[ChunkMetadata]):
+    pass
+
+
+class ChunkIO(Generic[T]):
+    def __init__(self, name: str):
+        self.name = name
+        self.running = Value('i', 0)
 
     def start(self,
-              in_queue: Optional[Queue],
-              out_queue: Optional[Queue],
-              metadata_queue: Optional[Queue]):
+              in_queue: Optional[AudioChunkStream],
+              out_queue: Optional[AudioChunkStream],
+              metadata_queue: Optional[MetadataChunkStream]):
         with self.running.get_lock():
             self.running.value = 1
-        p = pyaudio.PyAudio()
         do_output = out_queue is not None
         do_input = in_queue is not None
-        stream = p.open(format=pyaudio.paFloat32,
-                        channels=self.channels,
-                        rate=self.fs,
-                        input=do_input,
-                        output=do_output,
-                        frames_per_buffer=self.chunk_size)
-        stream.start_stream()
 
-        try:
+        with self.streaming_context(do_input, do_output) as ctx:
             out_thread = None
             in_thread = None
             if do_output:
-                out_thread = threading.Thread(
+                out_thread = Thread(
                     target=self.write_output,
-                    args=(out_queue, stream, metadata_queue),
+                    args=(ctx, out_queue, metadata_queue),
                 )
                 out_thread.start()
 
             if do_input:
-                in_thread = threading.Thread(
+                in_thread = Thread(
                     target=self.read_input,
-                    args=(stream, in_queue),
+                    args=(ctx, in_queue),
                 )
                 in_thread.start()
 
@@ -136,26 +113,42 @@ class PyAudioStreaming:
                 out_thread.join()
             if in_thread is not None:
                 in_thread.join()
-        finally:
-            stream.stop_stream()
-            stream.close()
-            p.terminate()
 
     def start_daemon(self,
-                     in_queue: Optional[Queue],
-                     out_queue: Optional[Queue],
-                     metadata_queue: Optional[Queue]):
+                     in_queue: Optional[AudioChunkStream],
+                     out_queue: Optional[AudioChunkStream],
+                     metadata_queue: Optional[MetadataChunkStream]):
         def target(iq, oq, mq):
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.start(iq, oq, mq)
 
-        return multiprocessing.Process(
-            name="pyaudio",
+        return Process(
+            name=self.name,
             target=target,
             args=(in_queue, out_queue, metadata_queue),
         )
 
+    def is_running(self):
+        with self.running.get_lock():
+            return self.running.value == 1
 
+    def stop(self):
+        with self.running.get_lock():
+            self.running.value = 0
 
+    def streaming_context(self,
+                          do_input: bool,
+                          do_output: bool
+                          ) -> T:
+        raise NotImplementedError
 
+    def read_input(self,
+                   ctx: T,
+                   in_queue: AudioChunkStream):
+        raise NotImplementedError
 
+    def write_output(self,
+                     ctx: T,
+                     out_queue: AudioChunkStream,
+                     metadata_queue: MetadataChunkStream):
+        raise NotImplementedError

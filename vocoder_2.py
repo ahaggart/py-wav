@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import multiprocessing
 import time
 from concurrent.futures.thread import ThreadPoolExecutor
 from multiprocessing.queues import Queue
@@ -11,7 +10,8 @@ import numpy as np
 
 from SignalContext import SignalContext
 from custom_types import Frames, Hz
-from py_wav.io.streaming import PyAudioStreaming, ChunkMetadata, StreamChunk
+from py_wav.io.pyaudio import PyAudioStreaming
+from py_wav.io.streaming import ChunkMetadata, StreamChunk, AudioChunkStream, MetadataChunkStream
 from signals.BandPassSignal import BandPassSignal
 from signals.ConstantSignal import ConstantSignal
 from signals.ScaledSignal import ScaledSignal
@@ -127,9 +127,9 @@ WIDTH = 4
 CHANNELS = 1
 FRAMES_PER_BUFFER = 256
 
-in_queue = multiprocessing.Queue(maxsize=3)
-out_queue = multiprocessing.Queue()
-meta_queue = multiprocessing.Queue()
+in_queue = AudioChunkStream(max_depth=1)
+out_queue = AudioChunkStream()
+meta_queue = MetadataChunkStream()
 
 
 def process_data(input_queue: Queue[Optional[StreamChunk]],
@@ -138,9 +138,11 @@ def process_data(input_queue: Queue[Optional[StreamChunk]],
     total_frames = 0
     for chunk in iter(input_queue.get, None):
         metadata = chunk.metadata
+        metadata.input_wait.stop()
         stream_signal.put_data(metadata.start, metadata.end, chunk.buf)
         with metadata.processing_time:
             out = component_sum.get_temporal(FS, metadata.start, metadata.end)
+        metadata.output_wait.start()
         output_queue.put(StreamChunk(out, metadata))
         total_frames = metadata.end
     output_queue.put(None)
@@ -188,33 +190,41 @@ with ThreadPoolExecutor(max_workers=1) as executor:
         pass
     finally:
         print("initiating shutdown")
-        with io_helper.running.get_lock():
-            io_helper.running.value = 0
+        io_helper.stop()
     total_frames = future.result()
 
 metadata.extend(iter(meta_queue.get, None))
 
-input_times = [m.input_time.time for m in metadata]
-processing_times = [m.processing_time.time for m in metadata]
-output_times = [m.output_time.time for m in metadata]
-round_trip_times = [m.round_trip_time.time for m in metadata]
-
 print(f"frames processed: {total_frames}")
 print(f"streamed length: {stream_signal.dur}")
 
-fig, (axes) = plt.subplots(4, 1)
-axes[0].plot(stream_signal.get_temporal(FS, 0, total_frames))
-axes[1].plot(stream_amp.get_temporal(FS, 0, total_frames))
-axes[2].plot(component_sum.get_temporal(FS, 0, total_frames))
-axes[3].plot(processing_times, color='blue')
-axes[3].plot(input_times, color='orange')
-axes[3].plot(output_times, color='green')
-axes[3].plot(round_trip_times, color='pink')
-axes[3].hlines(
-    y=FRAMES_PER_BUFFER/FS*1000000000,
-    xmin=0,
-    xmax=len(processing_times),
-    color='red',
-)
 
+def plot_timing_data(ax, chunk_metadata: List[ChunkMetadata]):
+    input_times = [m.input_time.time for m in chunk_metadata]
+    processing_times = [m.processing_time.time for m in chunk_metadata]
+    output_times = [m.output_time.time for m in chunk_metadata]
+    round_trip_times = [m.round_trip_time.time for m in chunk_metadata]
+    input_wait_times = [m.input_wait.time for m in chunk_metadata]
+    output_wait_times = [m.output_wait.time for m in chunk_metadata]
+
+    ax.plot(processing_times, label='processing')
+    ax.plot(input_times, label='read')
+    ax.plot(output_times, label='write')
+    ax.plot(round_trip_times, label='round_trip')
+    ax.plot(input_wait_times, label='input_queue')
+    ax.plot(output_wait_times, label='output_queue')
+    ax.legend()
+    ax.hlines(
+        y=FRAMES_PER_BUFFER / FS * 1000000000,
+        xmin=0,
+        xmax=len(processing_times),
+        color='red',
+    )
+
+
+fig, (axes) = plt.subplots(1, 1)
+# axes[0].plot(stream_signal.get_temporal(FS, 0, total_frames))
+# axes[1].plot(stream_amp.get_temporal(FS, 0, total_frames))
+# axes[2].plot(component_sum.get_temporal(FS, 0, total_frames))
+plot_timing_data(axes, metadata)
 plt.show()
