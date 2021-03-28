@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import time
 from concurrent.futures.thread import ThreadPoolExecutor
-from multiprocessing.queues import Queue
-from typing import Optional, List
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +10,7 @@ from SignalContext import SignalContext
 from custom_types import Frames, Hz
 from py_wav.io.pyaudio import PyAudioStreaming
 from py_wav.io.streaming import ChunkMetadata, StreamChunk, AudioChunkStream, MetadataChunkStream
+from py_wav.io.streaming_utils import plot_timing_data
 from signals.BandPassSignal import BandPassSignal
 from signals.ConstantSignal import ConstantSignal
 from signals.ScaledSignal import ScaledSignal
@@ -126,17 +125,18 @@ elif RUN_TYPE == "analyze":
 WIDTH = 4
 CHANNELS = 1
 FRAMES_PER_BUFFER = 256
+NS_PER_BUFFER = FRAMES_PER_BUFFER / FS * 1000000000
 
 in_queue = AudioChunkStream(max_depth=1)
 out_queue = AudioChunkStream()
 meta_queue = MetadataChunkStream()
 
 
-def process_data(input_queue: Queue[Optional[StreamChunk]],
-                 output_queue: Queue[Optional[StreamChunk]]):
+def process_data(input_queue: AudioChunkStream,
+                 output_queue: AudioChunkStream):
     print("starting worker thread")
     total_frames = 0
-    for chunk in iter(input_queue.get, None):
+    for chunk in input_queue:
         metadata = chunk.metadata
         metadata.input_wait.stop()
         stream_signal.put_data(metadata.start, metadata.end, chunk.buf)
@@ -145,30 +145,9 @@ def process_data(input_queue: Queue[Optional[StreamChunk]],
         metadata.output_wait.start()
         output_queue.put(StreamChunk(out, metadata))
         total_frames = metadata.end
-    output_queue.put(None)
+    output_queue.close()
     print("shutting down worker thread")
     return total_frames
-
-
-def input_loop(chunk_size: Frames,
-               input_queue: Queue[Optional[StreamChunk]]):
-    cur_frame = 0
-    try:
-        while True:
-            if not input_queue.full():
-                metadata = ChunkMetadata(cur_frame, cur_frame+chunk_size)
-                chunk = StreamChunk(
-                    buf=wav.get_temporal(FS, metadata.start, metadata.end),
-                    metadata=metadata,
-                )
-                input_queue.put(chunk)
-                cur_frame += chunk_size
-            else:
-                time.sleep(0.01)
-    except KeyboardInterrupt:
-        print("shutting down main thread")
-        input_queue.put(None)
-    return cur_frame
 
 
 io_helper = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
@@ -193,38 +172,14 @@ with ThreadPoolExecutor(max_workers=1) as executor:
         io_helper.stop()
     total_frames = future.result()
 
-metadata.extend(iter(meta_queue.get, None))
+metadata.extend(meta_queue)
 
 print(f"frames processed: {total_frames}")
 print(f"streamed length: {stream_signal.dur}")
-
-
-def plot_timing_data(ax, chunk_metadata: List[ChunkMetadata]):
-    input_times = [m.input_time.time for m in chunk_metadata]
-    processing_times = [m.processing_time.time for m in chunk_metadata]
-    output_times = [m.output_time.time for m in chunk_metadata]
-    round_trip_times = [m.round_trip_time.time for m in chunk_metadata]
-    input_wait_times = [m.input_wait.time for m in chunk_metadata]
-    output_wait_times = [m.output_wait.time for m in chunk_metadata]
-
-    ax.plot(processing_times, label='processing')
-    ax.plot(input_times, label='read')
-    ax.plot(output_times, label='write')
-    ax.plot(round_trip_times, label='round_trip')
-    ax.plot(input_wait_times, label='input_queue')
-    ax.plot(output_wait_times, label='output_queue')
-    ax.legend()
-    ax.hlines(
-        y=FRAMES_PER_BUFFER / FS * 1000000000,
-        xmin=0,
-        xmax=len(processing_times),
-        color='red',
-    )
-
 
 fig, (axes) = plt.subplots(1, 1)
 # axes[0].plot(stream_signal.get_temporal(FS, 0, total_frames))
 # axes[1].plot(stream_amp.get_temporal(FS, 0, total_frames))
 # axes[2].plot(component_sum.get_temporal(FS, 0, total_frames))
-plot_timing_data(axes, metadata)
+plot_timing_data(axes, metadata, lines=NS_PER_BUFFER)
 plt.show()
