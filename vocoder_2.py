@@ -27,8 +27,11 @@ FS = Hz(44100)
 MIN_FREQ = 20
 MAX_FREQ = 10000
 NUM_BANDS = 10
-NUM_TAPS = 801
-
+NUM_TAPS = 401
+WIDTH = 4
+CHANNELS = 1
+FRAMES_PER_BUFFER = 256
+NS_PER_BUFFER = FRAMES_PER_BUFFER / FS * 1000000000
 MAX_TIME_SECONDS = 20
 
 RUN_TYPE = "play"
@@ -123,18 +126,12 @@ elif RUN_TYPE == "analyze":
     fig, (axes) = plt.subplots(2, 3)
     exit()
 
-WIDTH = 4
-CHANNELS = 1
-FRAMES_PER_BUFFER = 256
-NS_PER_BUFFER = FRAMES_PER_BUFFER / FS * 1000000000
-
-in_queue = AudioChunkStream(max_depth=1)
-out_queue = AudioChunkStream()
+in_queue = AudioChunkStream(max_depth=2)
+out_queue = AudioChunkStream(max_depth=2)
 meta_queue = MetadataChunkStream()
-
 io_helper = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
+
 io_daemon = io_helper.start_daemon(in_queue, out_queue, meta_queue)
-io_daemon.start()
 
 metadata: List[ChunkMetadata] = []
 
@@ -165,5 +162,5 @@ fig, (axes) = plt.subplots(1, 1)
 # axes[0].plot(stream_signal.get_temporal(FS, 0, total_frames))
 # axes[1].plot(stream_amp.get_temporal(FS, 0, total_frames))
 # axes[2].plot(component_sum.get_temporal(FS, 0, total_frames))
-plot_timing_data(axes, metadata, lines=NS_PER_BUFFER)
+plot_timing_data(axes, FS, metadata, lines=NS_PER_BUFFER)
 plt.show()

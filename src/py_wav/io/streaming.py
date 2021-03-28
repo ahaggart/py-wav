@@ -3,11 +3,12 @@ from __future__ import annotations
 import signal
 import time
 import uuid
-from multiprocessing import Queue, Value, Process
+from multiprocessing import Value, Process
 from threading import Thread
-from typing import Generator, Optional, TypeVar, Generic
+from typing import Optional, TypeVar, Generic
 
 from custom_types import Frames
+from py_wav.io.core import ChunkStream
 
 
 class MetadataTimer:
@@ -29,6 +30,12 @@ class MetadataTimer:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
 
+    @classmethod
+    def started(cls):
+        t = MetadataTimer()
+        t.start()
+        return t
+
 
 class ChunkMetadata:
     def __init__(self, fs: Frames, start: Frames, end: Frames):
@@ -42,6 +49,8 @@ class ChunkMetadata:
         self.round_trip_time = MetadataTimer()
         self.input_wait = MetadataTimer()
         self.output_wait = MetadataTimer()
+        self.processor_wait = None
+        self.put_wait = None
 
 
 class StreamChunk:
@@ -51,24 +60,6 @@ class StreamChunk:
 
 
 T = TypeVar("T")
-
-
-class ChunkStream(Generic[T]):
-    def __init__(self, max_depth=0):
-        self.queue: Queue[Optional[T]] = Queue(maxsize=max_depth)
-
-    def __iter__(self) -> Generator[T]:
-        for chunk in iter(self.get, None):
-            yield chunk
-
-    def get(self, block=True, timeout=None):
-        return self.queue.get(block=block, timeout=timeout)
-
-    def put(self, chunk: Optional[T], block=True, timeout=None):
-        self.queue.put(chunk, block=block, timeout=timeout)
-
-    def close(self):
-        self.put(None)
 
 
 class AudioChunkStream(ChunkStream[StreamChunk]):
@@ -101,6 +92,8 @@ class ChunkIO(Generic[T]):
                     target=self.write_output,
                     args=(ctx, out_queue, metadata_queue),
                 )
+                out_queue.start()
+                metadata_queue.start()
                 out_thread.start()
 
             if do_input:
@@ -108,12 +101,16 @@ class ChunkIO(Generic[T]):
                     target=self.read_input,
                     args=(ctx, in_queue),
                 )
+                in_queue.start()
                 in_thread.start()
 
             if out_thread is not None:
                 out_thread.join()
+                out_queue.stop()
+                metadata_queue.stop()
             if in_thread is not None:
                 in_thread.join()
+                in_queue.stop()
 
     def start_daemon(self,
                      in_queue: Optional[AudioChunkStream],
@@ -123,11 +120,13 @@ class ChunkIO(Generic[T]):
             signal.signal(signal.SIGINT, signal.SIG_IGN)
             self.start(iq, oq, mq)
 
-        return Process(
+        proc = Process(
             name=self.name,
             target=target,
             args=(in_queue, out_queue, metadata_queue),
         )
+        proc.start()
+        return proc
 
     def is_running(self):
         with self.running.get_lock():
@@ -163,18 +162,22 @@ class StreamWorker:
         self.output_stream = output_stream
 
     def work(self):
-        print("starting worker thread")
+        print("starting worker")
         total_frames = 0
+        timer = MetadataTimer.started()
         for chunk in self.input_stream:
+            timer.stop()
             metadata = chunk.metadata
+            metadata.processor_wait = timer
             metadata.input_wait.stop()
             with metadata.processing_time:
                 out = self.process(chunk)
             metadata.output_wait.start()
             self.output_stream.put(StreamChunk(out, metadata))
             total_frames = metadata.end
+            timer = MetadataTimer.started()
         self.output_stream.close()
-        print("shutting down worker thread")
+        print("shutting down worker")
         return total_frames
 
     def process(self, chunk: StreamChunk):
