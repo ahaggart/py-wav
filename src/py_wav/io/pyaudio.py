@@ -52,6 +52,7 @@ class PyAudioStreaming(ChunkIO[PyAudioContext]):
         cur_frame = 0
         while self.is_running():
             metadata = ChunkMetadata(
+                fs=self.fs,
                 start=cur_frame,
                 end=cur_frame + self.chunk_size,
             )

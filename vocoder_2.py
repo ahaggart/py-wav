@@ -8,6 +8,7 @@ import numpy as np
 
 from SignalContext import SignalContext
 from custom_types import Frames, Hz
+from py_wav.io.SignalStreamWorker import SignalStreamWorker
 from py_wav.io.pyaudio import PyAudioStreaming
 from py_wav.io.streaming import ChunkMetadata, StreamChunk, AudioChunkStream, MetadataChunkStream
 from py_wav.io.streaming_utils import plot_timing_data
@@ -131,33 +132,16 @@ in_queue = AudioChunkStream(max_depth=1)
 out_queue = AudioChunkStream()
 meta_queue = MetadataChunkStream()
 
-
-def process_data(input_queue: AudioChunkStream,
-                 output_queue: AudioChunkStream):
-    print("starting worker thread")
-    total_frames = 0
-    for chunk in input_queue:
-        metadata = chunk.metadata
-        metadata.input_wait.stop()
-        stream_signal.put_data(metadata.start, metadata.end, chunk.buf)
-        with metadata.processing_time:
-            out = component_sum.get_temporal(FS, metadata.start, metadata.end)
-        metadata.output_wait.start()
-        output_queue.put(StreamChunk(out, metadata))
-        total_frames = metadata.end
-    output_queue.close()
-    print("shutting down worker thread")
-    return total_frames
-
-
 io_helper = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
 io_daemon = io_helper.start_daemon(in_queue, out_queue, meta_queue)
 io_daemon.start()
 
 metadata: List[ChunkMetadata] = []
 
+worker = SignalStreamWorker(in_queue, stream_signal, component_sum, out_queue)
+
 with ThreadPoolExecutor(max_workers=1) as executor:
-    future = executor.submit(process_data, in_queue, out_queue)
+    future = executor.submit(worker.work)
     try:
         while True:
             chunk_metadata: ChunkMetadata = meta_queue.get()

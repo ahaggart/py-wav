@@ -31,8 +31,9 @@ class MetadataTimer:
 
 
 class ChunkMetadata:
-    def __init__(self, start: Frames, end: Frames):
+    def __init__(self, fs: Frames, start: Frames, end: Frames):
         self.id = uuid.uuid4()
+        self.fs = fs
         self.start = start
         self.end = end
         self.processing_time = MetadataTimer()
@@ -151,4 +152,30 @@ class ChunkIO(Generic[T]):
                      ctx: T,
                      out_queue: AudioChunkStream,
                      metadata_queue: MetadataChunkStream):
+        raise NotImplementedError
+
+
+class StreamWorker:
+    def __init__(self,
+                 input_stream: AudioChunkStream,
+                 output_stream: AudioChunkStream):
+        self.input_stream = input_stream
+        self.output_stream = output_stream
+
+    def work(self):
+        print("starting worker thread")
+        total_frames = 0
+        for chunk in self.input_stream:
+            metadata = chunk.metadata
+            metadata.input_wait.stop()
+            with metadata.processing_time:
+                out = self.process(chunk)
+            metadata.output_wait.start()
+            self.output_stream.put(StreamChunk(out, metadata))
+            total_frames = metadata.end
+        self.output_stream.close()
+        print("shutting down worker thread")
+        return total_frames
+
+    def process(self, chunk: StreamChunk):
         raise NotImplementedError
