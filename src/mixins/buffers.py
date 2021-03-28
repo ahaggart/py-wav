@@ -19,6 +19,11 @@ class TilingMixin:
         source_buffer = self.get_buffer(fs)
         lower, upper = self.get_range(fs)
 
+        out = np.zeros(end - start)
+
+        if start > upper:
+            return out
+
         # TODO: upsample source buffer to near-integer period
 
         # compute the sampleable range of the signal
@@ -34,7 +39,6 @@ class TilingMixin:
         output_start = sample_start - start
         output_end = sample_end - start
 
-        out = np.zeros(end-start)
         out[output_start:output_end] = tiled_buffer[output_start:output_end]
 
         return out

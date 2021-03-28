@@ -42,6 +42,11 @@ class StreamingSignal(Signal):
             )
         return 0, self.dur
 
-    def put_data(self, buf):
-        self.buf[self.dur:self.dur+len(buf)] = buf
-        self.dur += len(buf)
+    def put_data(self, start, end, buf):
+        cur_size = len(self.buf)
+        if end > cur_size:
+            new_buf = np.zeros(cur_size*2)
+            new_buf[0:cur_size] = self.buf[:]
+            self.buf = new_buf
+        self.buf[start:end] = buf
+        self.dur = max(self.dur, end)

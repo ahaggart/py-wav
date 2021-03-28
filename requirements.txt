@@ -4,3 +4,4 @@ bezier
 simpleaudio
 scipy
 matplotlib
+pyaudio

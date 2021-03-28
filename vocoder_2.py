@@ -1,12 +1,17 @@
+from __future__ import annotations
+
+import multiprocessing
 import time
+from concurrent.futures.thread import ThreadPoolExecutor
+from multiprocessing.queues import Queue
+from typing import Optional, List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pyaudio
 
 from SignalContext import SignalContext
 from custom_types import Frames, Hz
-from output import play_signal
+from py_wav.io.streaming import PyAudioStreaming, ChunkMetadata, StreamChunk
 from signals.BandPassSignal import BandPassSignal
 from signals.ConstantSignal import ConstantSignal
 from signals.ScaledSignal import ScaledSignal
@@ -17,13 +22,14 @@ from signals.WavSignal import WavSignal
 from signals.WindowMaxSignal import WindowMaxSignal
 
 # human hearing: 20hz - 20khz
-from util.frames import to_frames
 
 FS = Hz(44100)
 MIN_FREQ = 20
 MAX_FREQ = 10000
 NUM_BANDS = 10
-NUM_TAPS = 201
+NUM_TAPS = 801
+
+MAX_TIME_SECONDS = 20
 
 RUN_TYPE = "play"
 
@@ -46,7 +52,7 @@ stream_gain = ConstantSignal(SignalContext({
     "uuid": "stream-gain",
     "type": "constant",
     "value": 10,
-    "dur": FS*20,
+    "dur": MAX_TIME_SECONDS,
 }))
 
 stream_amp = ScaledSignal(SignalContext.with_refs({
@@ -85,7 +91,7 @@ for lower, upper in bands:
         "uuid": f"carrier-{lower}",
         "type": "sine",
         "freq": lower,
-        "dur": LENGTH / FS
+        "dur": MAX_TIME_SECONDS,
     }))
 
     component = ScaledSignal(SignalContext.with_refs({
@@ -121,68 +127,94 @@ WIDTH = 4
 CHANNELS = 1
 FRAMES_PER_BUFFER = 256
 
-p = pyaudio.PyAudio()
+in_queue = multiprocessing.Queue(maxsize=3)
+out_queue = multiprocessing.Queue()
+meta_queue = multiprocessing.Queue()
 
 
-RECORD_LEN = 5*FS
-
-in_buf = np.zeros(RECORD_LEN)
-out_buf = np.zeros(RECORD_LEN)
-frames = 0
-
-
-def callback(in_data, frame_count, time_info, status):
-    global frames
-    # print(f"got here: {frames} + {frame_count}")
-    start = time.time_ns()
-    buf = np.frombuffer(in_data, dtype=np.float32)
-    in_buf[frames:frames+len(buf)] = buf
-    stream_signal.put_data(buf)
-    _, upper = stream_signal.get_range(FS)
-    out = component_sum.get_temporal(FS, to_frames(upper-len(buf)), to_frames(upper))
-    out_buf[frames:frames+len(buf)] = out
-
-    frames += len(buf)
-
-    if frames + len(buf) > RECORD_LEN:
-        flag = pyaudio.paComplete
-    else:
-        flag = pyaudio.paContinue
-
-    result = out.astype(np.float32).tobytes()
-
-    end = time.time_ns()
-
-    print(f"took {end-start} ns for {len(buf)/FS*1000000000} ns of data")
-
-    return result, flag
+def process_data(input_queue: Queue[Optional[StreamChunk]],
+                 output_queue: Queue[Optional[StreamChunk]]):
+    print("starting worker thread")
+    total_frames = 0
+    for chunk in iter(input_queue.get, None):
+        metadata = chunk.metadata
+        stream_signal.put_data(metadata.start, metadata.end, chunk.buf)
+        with metadata.processing_time:
+            out = component_sum.get_temporal(FS, metadata.start, metadata.end)
+        output_queue.put(StreamChunk(out, metadata))
+        total_frames = metadata.end
+    output_queue.put(None)
+    print("shutting down worker thread")
+    return total_frames
 
 
-stream = p.open(format=p.get_format_from_width(WIDTH),
-                channels=CHANNELS,
-                rate=FS,
-                input=True,
-                output=True,
-                frames_per_buffer=FRAMES_PER_BUFFER,
-                stream_callback=callback)
+def input_loop(chunk_size: Frames,
+               input_queue: Queue[Optional[StreamChunk]]):
+    cur_frame = 0
+    try:
+        while True:
+            if not input_queue.full():
+                metadata = ChunkMetadata(cur_frame, cur_frame+chunk_size)
+                chunk = StreamChunk(
+                    buf=wav.get_temporal(FS, metadata.start, metadata.end),
+                    metadata=metadata,
+                )
+                input_queue.put(chunk)
+                cur_frame += chunk_size
+            else:
+                time.sleep(0.01)
+    except KeyboardInterrupt:
+        print("shutting down main thread")
+        input_queue.put(None)
+    return cur_frame
 
-stream.start_stream()
 
-while stream.is_active():
-    time.sleep(0.01)
+io_helper = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
+io_daemon = io_helper.start_daemon(in_queue, out_queue, meta_queue)
+io_daemon.start()
 
-stream.stop_stream()
-stream.close()
+metadata: List[ChunkMetadata] = []
 
-p.terminate()
+with ThreadPoolExecutor(max_workers=1) as executor:
+    future = executor.submit(process_data, in_queue, out_queue)
+    try:
+        while True:
+            chunk_metadata: ChunkMetadata = meta_queue.get()
+            metadata.append(chunk_metadata)
+            if chunk_metadata.end > MAX_TIME_SECONDS * FS:
+                print(f"Reach max time: {MAX_TIME_SECONDS} seconds")
+                break
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print("initiating shutdown")
+        with io_helper.running.get_lock():
+            io_helper.running.value = 0
+    total_frames = future.result()
 
-print(f"frames processed: {frames}")
+metadata.extend(iter(meta_queue.get, None))
+
+input_times = [m.input_time.time for m in metadata]
+processing_times = [m.processing_time.time for m in metadata]
+output_times = [m.output_time.time for m in metadata]
+round_trip_times = [m.round_trip_time.time for m in metadata]
+
+print(f"frames processed: {total_frames}")
 print(f"streamed length: {stream_signal.dur}")
 
-fig, (axes) = plt.subplots(5, 1)
-axes[0].plot(in_buf[:frames])
-axes[1].plot(stream_signal.get_temporal(FS, 0, frames))
-axes[2].plot(stream_amp.get_temporal(FS, 0, frames))
-axes[3].plot(component_sum.get_temporal(FS, 0, frames))
-axes[4].plot(out_buf[:frames])
+fig, (axes) = plt.subplots(4, 1)
+axes[0].plot(stream_signal.get_temporal(FS, 0, total_frames))
+axes[1].plot(stream_amp.get_temporal(FS, 0, total_frames))
+axes[2].plot(component_sum.get_temporal(FS, 0, total_frames))
+axes[3].plot(processing_times, color='blue')
+axes[3].plot(input_times, color='orange')
+axes[3].plot(output_times, color='green')
+axes[3].plot(round_trip_times, color='pink')
+axes[3].hlines(
+    y=FRAMES_PER_BUFFER/FS*1000000000,
+    xmin=0,
+    xmax=len(processing_times),
+    color='red',
+)
+
 plt.show()

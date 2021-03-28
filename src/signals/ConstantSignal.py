@@ -3,7 +3,7 @@ import numpy as np
 from Signal import Signal
 from SignalContext import SignalContext
 from SignalRegistry import register
-from custom_types import Hz, Partial, FrameRange, Frames
+from custom_types import Hz, Partial, FrameRange, Frames, Seconds
 from mixins.buffers import TilingMixin, TruncatingMixin
 from mixins.domains import TemporalDomainHelper
 
@@ -13,7 +13,7 @@ class ConstantSignal(TruncatingMixin, TemporalDomainHelper, Signal):
         Signal.__init__(self, context)
         TemporalDomainHelper.__init__(self)
         self.value = float(self.data.data['value'])
-        self.dur = float(self.data.data['dur'])
+        self.dur = Seconds(self.data.data['dur'])
 
     def get_temporal_checked(self, fs: Hz, start: Frames, end: Frames):
         return np.full(end-start, self.value)

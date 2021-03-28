@@ -18,7 +18,7 @@ DRAW_COMPONENTS = False
 # human hearing: 20hz - 20khz
 MIN_FREQ = 20
 MAX_FREQ = 10000
-NUM_BANDS = 10
+NUM_BANDS = 8
 
 START_FRAME: Frames = 0
 END_FRAME = None
