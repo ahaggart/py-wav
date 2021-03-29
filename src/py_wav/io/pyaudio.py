@@ -4,7 +4,7 @@ import numpy as np
 import pyaudio
 
 from custom_types import Hz, Frames
-from py_wav.io.streaming import StreamChunk, InputManager, OutputManager, IOContext
+from py_wav.io.streaming import StreamChunk, InputManager, OutputManager, IOContext, ChunkMetadata
 
 
 class PyAudioContext(IOContext):
@@ -60,7 +60,7 @@ class PyAudioStreaming(InputManager, OutputManager):
             chunk_size=self.chunk_size,
         )
 
-    def read_input(self, ctx: PyAudioContext):
+    def read_input(self, ctx: PyAudioContext, metadata: ChunkMetadata):
         in_data = ctx.stream.read(self.chunk_size)
         return np.frombuffer(in_data, dtype=np.float32)
 

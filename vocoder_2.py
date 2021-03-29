@@ -8,7 +8,7 @@ import numpy as np
 
 from SignalContext import SignalContext
 from custom_types import Frames, Hz
-from py_wav.io.SignalStreamWorker import SignalStreamWorker
+from py_wav.io.signal_io import SignalStreamWorker, SignalInputManager
 from py_wav.io.pyaudio import PyAudioStreaming
 from py_wav.io.streaming import ChunkMetadata, StreamChunk, AudioChunkStream, MetadataChunkStream, ChunkIO
 from py_wav.io.streaming_utils import plot_timing_data
@@ -129,8 +129,9 @@ elif RUN_TYPE == "analyze":
 in_queue = AudioChunkStream(max_depth=2)
 out_queue = AudioChunkStream(max_depth=2)
 meta_queue = MetadataChunkStream()
-io_manager = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
-io_orchestrator = ChunkIO(FS, FRAMES_PER_BUFFER, io_manager, io_manager)
+pyaudio_io = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
+signal_input = SignalInputManager(wav)  # use this one to play a wav file
+io_orchestrator = ChunkIO(FS, FRAMES_PER_BUFFER, pyaudio_io, pyaudio_io)
 io_daemon = io_orchestrator.start_daemon(in_queue, out_queue, meta_queue)
 
 metadata: List[ChunkMetadata] = []

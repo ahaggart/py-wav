@@ -1,5 +1,5 @@
 from Signal import Signal
-from py_wav.io.streaming import StreamWorker, AudioChunkStream, StreamChunk
+from py_wav.io.streaming import StreamWorker, AudioChunkStream, StreamChunk, InputManager, DummyContext, ChunkMetadata
 from signals.StreamingSignal import StreamingSignal
 
 
@@ -18,3 +18,14 @@ class SignalStreamWorker(StreamWorker):
         fs = metadata.fs
         self.input_signal.put_data(metadata.start, metadata.end, chunk.buf)
         return self.output_signal.get_temporal(fs, metadata.start, metadata.end)
+
+
+class SignalInputManager(InputManager):
+    def __init__(self, signal: Signal):
+        self.signal = signal
+
+    def read_input(self, ctx: DummyContext, metadata: ChunkMetadata):
+        return self.signal.get_temporal(metadata.fs, metadata.start, metadata.end)
+
+    def get_context(self) -> DummyContext:
+        return DummyContext()

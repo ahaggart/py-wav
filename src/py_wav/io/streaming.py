@@ -84,11 +84,25 @@ class IOContext:
         raise NotImplementedError
 
 
+class DummyContext:
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def use_for_input(self):
+        pass
+
+    def use_for_output(self):
+        pass
+
+
 class InputManager:
     def get_context(self) -> IOContext:
         raise NotImplementedError
 
-    def read_input(self, ctx: IOContext):
+    def read_input(self, ctx: IOContext, metadata: ChunkMetadata):
         raise NotImplementedError
 
 
@@ -120,9 +134,6 @@ class ChunkIO(Generic[T]):
               metadata_queue: Optional[MetadataChunkStream]):
         with self.running.get_lock():
             self.running.value = 1
-        do_output = out_queue is not None
-        do_input = in_queue is not None
-
         input_ctx = self.input_manager.get_context()
         input_ctx.use_for_input()
 
@@ -188,7 +199,7 @@ class ChunkIO(Generic[T]):
             )
             metadata.round_trip_time.start()
             with metadata.audio_in:
-                buf = self.input_manager.read_input(ctx)
+                buf = self.input_manager.read_input(ctx, metadata)
 
             chunk = StreamChunk(buf, metadata=metadata)
             metadata.input_send.start()
