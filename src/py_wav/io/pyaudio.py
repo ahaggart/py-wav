@@ -6,7 +6,8 @@ import numpy as np
 import pyaudio
 
 from custom_types import Hz, Frames
-from py_wav.io.streaming import StreamChunk, ChunkMetadata, AudioChunkStream, MetadataChunkStream, ChunkIO
+from py_wav.io.streaming import StreamChunk, ChunkMetadata, AudioChunkStream, MetadataChunkStream, ChunkIO, \
+    MetadataTimer
 
 
 class PyAudioContext(ContextManager):
@@ -39,53 +40,18 @@ class PyAudioContext(ContextManager):
 
 class PyAudioStreaming(ChunkIO[PyAudioContext]):
     def __init__(self, fs: Hz, channels: int, chunk_size: Frames):
-        ChunkIO.__init__(self, "pyaudio")
+        ChunkIO.__init__(self, fs, chunk_size, name="pyaudio")
         self.chunk_size = chunk_size
         self.fs = int(fs)
         self.channels = int(channels)
 
-    def read_input(self,
-                   ctx: PyAudioContext,
-                   buffer_out: AudioChunkStream):
-        print("starting input")
-        audio_in = ctx.stream
-        cur_frame = 0
-        while self.is_running():
-            metadata = ChunkMetadata(
-                fs=self.fs,
-                start=cur_frame,
-                end=cur_frame + self.chunk_size,
-            )
+    def read_input(self, ctx: PyAudioContext):
+        in_data = ctx.stream.read(self.chunk_size)
+        return np.frombuffer(in_data, dtype=np.float32)
 
-            in_data = audio_in.read(self.chunk_size)
-            with metadata.input_time:
-                buf = np.frombuffer(in_data, dtype=np.float32)
-
-            chunk = StreamChunk(buf, metadata=metadata)
-            metadata.round_trip_time.start()
-            metadata.input_wait.start()
-            buffer_out.put(chunk)
-            cur_frame += self.chunk_size
-        buffer_out.close()
-        print("finished input")
-
-    def write_output(self,
-                     ctx: PyAudioContext,
-                     buffer_in: AudioChunkStream,
-                     metadata_out: Optional[MetadataChunkStream] = None):
-        print("starting output")
-        audio_out = ctx.stream
-        for chunk in buffer_in:
-            chunk.metadata.output_wait.stop()
-            chunk.metadata.round_trip_time.stop()
-            with chunk.metadata.output_time:
-                frames = chunk.buf.astype(np.float32).tobytes()
-                audio_out.write(frames, num_frames=len(chunk.buf))
-            if metadata_out is not None:
-                metadata_out.put(chunk.metadata)
-        if metadata_out is not None:
-            metadata_out.close()
-        print("finished output")
+    def write_output(self, ctx: PyAudioContext, chunk: StreamChunk):
+        frames = chunk.buf.astype(np.float32).tobytes()
+        ctx.stream.write(frames, num_frames=len(chunk.buf))
 
     def streaming_context(self, do_input: bool, do_output: bool) -> PyAudioContext:
         return PyAudioContext(

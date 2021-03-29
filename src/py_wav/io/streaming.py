@@ -44,13 +44,13 @@ class ChunkMetadata:
         self.start = start
         self.end = end
         self.processing_time = MetadataTimer()
-        self.input_time = MetadataTimer()
-        self.output_time = MetadataTimer()
+        self.audio_in = MetadataTimer()
+        self.audio_out = MetadataTimer()
         self.round_trip_time = MetadataTimer()
-        self.input_wait = MetadataTimer()
-        self.output_wait = MetadataTimer()
-        self.processor_wait = None
-        self.put_wait = None
+        self.input_send = MetadataTimer()
+        self.processor_recv = None
+        self.processor_send = MetadataTimer()
+        self.output_recv = None
 
 
 class StreamChunk:
@@ -71,7 +71,9 @@ class MetadataChunkStream(ChunkStream[ChunkMetadata]):
 
 
 class ChunkIO(Generic[T]):
-    def __init__(self, name: str):
+    def __init__(self, fs: Frames, chunk_size: Frames, name: str = "chunk-io"):
+        self.fs = fs
+        self.chunk_size = chunk_size
         self.name = name
         self.running = Value('i', 0)
 
@@ -89,7 +91,7 @@ class ChunkIO(Generic[T]):
             in_thread = None
             if do_output:
                 out_thread = Thread(
-                    target=self.write_output,
+                    target=self.write_daemon,
                     args=(ctx, out_queue, metadata_queue),
                 )
                 out_queue.start()
@@ -98,7 +100,7 @@ class ChunkIO(Generic[T]):
 
             if do_input:
                 in_thread = Thread(
-                    target=self.read_input,
+                    target=self.read_daemon,
                     args=(ctx, in_queue),
                 )
                 in_queue.start()
@@ -142,16 +144,51 @@ class ChunkIO(Generic[T]):
                           ) -> T:
         raise NotImplementedError
 
-    def read_input(self,
-                   ctx: T,
-                   in_queue: AudioChunkStream):
+    def read_input(self, ctx: T):
         raise NotImplementedError
 
-    def write_output(self,
-                     ctx: T,
-                     out_queue: AudioChunkStream,
-                     metadata_queue: MetadataChunkStream):
+    def write_output(self, ctx: T, chunk: StreamChunk):
         raise NotImplementedError
+
+    def read_daemon(self, ctx: T, buffer_out: AudioChunkStream):
+        print("starting input")
+        cur_frame = 0
+        while self.is_running():
+            metadata = ChunkMetadata(
+                fs=self.fs,
+                start=cur_frame,
+                end=cur_frame + self.chunk_size,
+            )
+            metadata.round_trip_time.start()
+            with metadata.audio_in:
+                buf = self.read_input(ctx)
+
+            chunk = StreamChunk(buf, metadata=metadata)
+            metadata.input_send.start()
+            buffer_out.put(chunk)
+            cur_frame += self.chunk_size
+        buffer_out.close()
+        print("finished input")
+
+    def write_daemon(self,
+                     ctx: T,
+                     buffer_in: AudioChunkStream,
+                     metadata_out: Optional[MetadataChunkStream] = None):
+        print("starting output")
+        output_recv = MetadataTimer.started()
+        for chunk in buffer_in:
+            output_recv.stop()
+            chunk.metadata.processor_send.stop()
+            chunk.metadata.output_recv = output_recv
+            with chunk.metadata.audio_out:
+                self.write_output(ctx, chunk)
+            chunk.metadata.round_trip_time.stop()
+            if metadata_out is not None:
+                metadata_out.put(chunk.metadata)
+            output_recv = MetadataTimer.started()
+        if metadata_out is not None:
+            metadata_out.close()
+        print("finished output")
 
 
 class StreamWorker:
@@ -168,11 +205,11 @@ class StreamWorker:
         for chunk in self.input_stream:
             timer.stop()
             metadata = chunk.metadata
-            metadata.processor_wait = timer
-            metadata.input_wait.stop()
+            metadata.processor_recv = timer
+            metadata.input_send.stop()
             with metadata.processing_time:
                 out = self.process(chunk)
-            metadata.output_wait.start()
+            metadata.processor_send.start()
             self.output_stream.put(StreamChunk(out, metadata))
             total_frames = metadata.end
             timer = MetadataTimer.started()
