@@ -70,10 +70,47 @@ class MetadataChunkStream(ChunkStream[ChunkMetadata]):
     pass
 
 
+class IOContext:
+    def __enter__(self):
+        raise NotImplementedError
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        raise NotImplementedError
+
+    def use_for_input(self):
+        raise NotImplementedError
+
+    def use_for_output(self):
+        raise NotImplementedError
+
+
+class InputManager:
+    def get_context(self) -> IOContext:
+        raise NotImplementedError
+
+    def read_input(self, ctx: IOContext):
+        raise NotImplementedError
+
+
+class OutputManager:
+    def get_context(self) -> IOContext:
+        raise NotImplementedError
+
+    def write_output(self, ctx: IOContext, chunk: StreamChunk):
+        raise NotImplementedError
+
+
 class ChunkIO(Generic[T]):
-    def __init__(self, fs: Frames, chunk_size: Frames, name: str = "chunk-io"):
+    def __init__(self,
+                 fs: Frames,
+                 chunk_size: Frames,
+                 input_manager: InputManager,
+                 output_manager: OutputManager,
+                 name: str = "chunk-io"):
         self.fs = fs
         self.chunk_size = chunk_size
+        self.input_manager = input_manager
+        self.output_manager = output_manager
         self.name = name
         self.running = Value('i', 0)
 
@@ -86,31 +123,33 @@ class ChunkIO(Generic[T]):
         do_output = out_queue is not None
         do_input = in_queue is not None
 
-        with self.streaming_context(do_input, do_output) as ctx:
-            out_thread = None
-            in_thread = None
-            if do_output:
+        input_ctx = self.input_manager.get_context()
+        input_ctx.use_for_input()
+
+        output_ctx = self.output_manager.get_context()
+        output_ctx.use_for_output()
+
+        with output_ctx:
+            with input_ctx:
                 out_thread = Thread(
                     target=self.write_daemon,
-                    args=(ctx, out_queue, metadata_queue),
+                    args=(output_ctx, out_queue, metadata_queue),
                 )
                 out_queue.start()
                 metadata_queue.start()
                 out_thread.start()
 
-            if do_input:
                 in_thread = Thread(
                     target=self.read_daemon,
-                    args=(ctx, in_queue),
+                    args=(input_ctx, in_queue),
                 )
                 in_queue.start()
                 in_thread.start()
 
-            if out_thread is not None:
                 out_thread.join()
                 out_queue.stop()
                 metadata_queue.stop()
-            if in_thread is not None:
+
                 in_thread.join()
                 in_queue.stop()
 
@@ -138,18 +177,6 @@ class ChunkIO(Generic[T]):
         with self.running.get_lock():
             self.running.value = 0
 
-    def streaming_context(self,
-                          do_input: bool,
-                          do_output: bool
-                          ) -> T:
-        raise NotImplementedError
-
-    def read_input(self, ctx: T):
-        raise NotImplementedError
-
-    def write_output(self, ctx: T, chunk: StreamChunk):
-        raise NotImplementedError
-
     def read_daemon(self, ctx: T, buffer_out: AudioChunkStream):
         print("starting input")
         cur_frame = 0
@@ -161,7 +188,7 @@ class ChunkIO(Generic[T]):
             )
             metadata.round_trip_time.start()
             with metadata.audio_in:
-                buf = self.read_input(ctx)
+                buf = self.input_manager.read_input(ctx)
 
             chunk = StreamChunk(buf, metadata=metadata)
             metadata.input_send.start()
@@ -181,7 +208,7 @@ class ChunkIO(Generic[T]):
             chunk.metadata.processor_send.stop()
             chunk.metadata.output_recv = output_recv
             with chunk.metadata.audio_out:
-                self.write_output(ctx, chunk)
+                self.output_manager.write_output(ctx, chunk)
             chunk.metadata.round_trip_time.stop()
             if metadata_out is not None:
                 metadata_out.put(chunk.metadata)

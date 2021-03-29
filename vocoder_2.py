@@ -10,7 +10,7 @@ from SignalContext import SignalContext
 from custom_types import Frames, Hz
 from py_wav.io.SignalStreamWorker import SignalStreamWorker
 from py_wav.io.pyaudio import PyAudioStreaming
-from py_wav.io.streaming import ChunkMetadata, StreamChunk, AudioChunkStream, MetadataChunkStream
+from py_wav.io.streaming import ChunkMetadata, StreamChunk, AudioChunkStream, MetadataChunkStream, ChunkIO
 from py_wav.io.streaming_utils import plot_timing_data
 from signals.BandPassSignal import BandPassSignal
 from signals.ConstantSignal import ConstantSignal
@@ -129,9 +129,9 @@ elif RUN_TYPE == "analyze":
 in_queue = AudioChunkStream(max_depth=2)
 out_queue = AudioChunkStream(max_depth=2)
 meta_queue = MetadataChunkStream()
-io_helper = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
-
-io_daemon = io_helper.start_daemon(in_queue, out_queue, meta_queue)
+io_manager = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
+io_orchestrator = ChunkIO(FS, FRAMES_PER_BUFFER, io_manager, io_manager)
+io_daemon = io_orchestrator.start_daemon(in_queue, out_queue, meta_queue)
 
 metadata: List[ChunkMetadata] = []
 
@@ -150,7 +150,7 @@ with ThreadPoolExecutor(max_workers=1) as executor:
         pass
     finally:
         print("initiating shutdown")
-        io_helper.stop()
+        io_orchestrator.stop()
     total_frames = future.result()
 
 metadata.extend(meta_queue)
