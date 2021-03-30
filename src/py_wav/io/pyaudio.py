@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import numpy as np
 import pyaudio
 
@@ -37,6 +39,8 @@ class PyAudioContext(IOContext):
                                   output=self.do_output,
                                   frames_per_buffer=self.chunk_size)
         self.stream.start_stream()
+        while not self.stream.is_active():
+            time.sleep(0.001)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

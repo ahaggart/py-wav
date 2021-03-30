@@ -1,4 +1,4 @@
-from math import ceil
+from math import ceil, floor
 
 import numpy as np
 
@@ -6,7 +6,7 @@ from custom_types import Partial, Frames
 
 
 def to_frames(partial: Partial) -> Frames:
-    return ceil(partial)
+    return floor(partial)
 
 
 def np_to_frames(buf):

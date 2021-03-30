@@ -17,8 +17,8 @@ class SummingSignal(TemporalDomainHelper, Signal):
         lower = min((lower for _, lower in ranges))
         return lower, upper
 
-    def get_temporal(self, fs: Hz, start: Frames, end: Frames):
-        buf = np.zeros(end-start)
+    def get_temporal(self, fs: Hz, size: Frames, end: Frames):
+        buf = np.zeros(size)
         for child in self.children:
-            buf += child.get_temporal(fs, start, end)
+            buf += child.get_temporal(fs, size, end)
         return buf

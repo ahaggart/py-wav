@@ -143,6 +143,7 @@ class ChunkIO(Generic[T]):
         with output_ctx:
             with input_ctx:
                 out_thread = Thread(
+                    name="chunk-output",
                     target=self.write_daemon,
                     args=(output_ctx, out_queue, metadata_queue),
                 )
@@ -151,6 +152,7 @@ class ChunkIO(Generic[T]):
                 out_thread.start()
 
                 in_thread = Thread(
+                    name="chunk-input",
                     target=self.read_daemon,
                     args=(input_ctx, in_queue),
                 )
@@ -191,21 +193,27 @@ class ChunkIO(Generic[T]):
     def read_daemon(self, ctx: T, buffer_out: AudioChunkStream):
         print("starting input")
         cur_frame = 0
-        while self.is_running():
-            metadata = ChunkMetadata(
-                fs=self.fs,
-                start=cur_frame,
-                end=cur_frame + self.chunk_size,
-            )
-            metadata.round_trip_time.start()
-            with metadata.audio_in:
-                buf = self.input_manager.read_input(ctx, metadata)
+        try:
+            while self.is_running():
+                metadata = ChunkMetadata(
+                    fs=self.fs,
+                    start=cur_frame,
+                    end=cur_frame + self.chunk_size,
+                )
+                metadata.round_trip_time.start()
+                with metadata.audio_in:
+                    buf = self.input_manager.read_input(ctx, metadata)
 
-            chunk = StreamChunk(buf, metadata=metadata)
-            metadata.input_send.start()
-            buffer_out.put(chunk)
-            cur_frame += self.chunk_size
-        buffer_out.close()
+                chunk = StreamChunk(buf, metadata=metadata)
+                metadata.input_send.start()
+                buffer_out.put(chunk)
+                cur_frame += self.chunk_size
+        except Exception as e:
+            print("error, shutting down input")
+            raise e
+        finally:
+            self.stop()
+            buffer_out.close()
         print("finished input")
 
     def write_daemon(self,
@@ -213,19 +221,25 @@ class ChunkIO(Generic[T]):
                      buffer_in: AudioChunkStream,
                      metadata_out: Optional[MetadataChunkStream] = None):
         print("starting output")
-        output_recv = MetadataTimer.started()
-        for chunk in buffer_in:
-            output_recv.stop()
-            chunk.metadata.processor_send.stop()
-            chunk.metadata.output_recv = output_recv
-            with chunk.metadata.audio_out:
-                self.output_manager.write_output(ctx, chunk)
-            chunk.metadata.round_trip_time.stop()
-            if metadata_out is not None:
-                metadata_out.put(chunk.metadata)
+        try:
             output_recv = MetadataTimer.started()
-        if metadata_out is not None:
-            metadata_out.close()
+            for chunk in buffer_in:
+                output_recv.stop()
+                chunk.metadata.processor_send.stop()
+                chunk.metadata.output_recv = output_recv
+                with chunk.metadata.audio_out:
+                    self.output_manager.write_output(ctx, chunk)
+                chunk.metadata.round_trip_time.stop()
+                if metadata_out is not None:
+                    metadata_out.put(chunk.metadata)
+                output_recv = MetadataTimer.started()
+        except Exception as e:
+            print("error, shutting down output")
+            raise e
+        finally:
+            self.stop()
+            if metadata_out is not None:
+                metadata_out.close()
         print("finished output")
 
 
@@ -238,20 +252,25 @@ class StreamWorker:
 
     def work(self):
         print("starting worker")
-        total_frames = 0
-        timer = MetadataTimer.started()
-        for chunk in self.input_stream:
-            timer.stop()
-            metadata = chunk.metadata
-            metadata.processor_recv = timer
-            metadata.input_send.stop()
-            with metadata.processing_time:
-                out = self.process(chunk)
-            metadata.processor_send.start()
-            self.output_stream.put(StreamChunk(out, metadata))
-            total_frames = metadata.end
+        try:
+            total_frames = 0
             timer = MetadataTimer.started()
-        self.output_stream.close()
+            for chunk in self.input_stream:
+                timer.stop()
+                metadata = chunk.metadata
+                metadata.processor_recv = timer
+                metadata.input_send.stop()
+                with metadata.processing_time:
+                    out = self.process(chunk)
+                metadata.processor_send.start()
+                self.output_stream.put(StreamChunk(out, metadata))
+                total_frames = metadata.end
+                timer = MetadataTimer.started()
+        except Exception as e:
+            print("error: shutting down processor")
+            raise e
+        finally:
+            self.output_stream.close()
         print("shutting down worker")
         return total_frames
 

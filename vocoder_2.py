@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import List
 
@@ -10,9 +11,9 @@ from SignalContext import SignalContext
 from custom_types import Frames, Hz
 from py_wav.io.signal_io import SignalStreamWorker, SignalInputManager
 from py_wav.io.pyaudio import PyAudioStreaming
-from py_wav.io.streaming import ChunkMetadata, StreamChunk, AudioChunkStream, MetadataChunkStream, ChunkIO
+from py_wav.io.streaming import ChunkMetadata, AudioChunkStream, MetadataChunkStream, ChunkIO
 from py_wav.io.streaming_utils import plot_timing_data
-from signals.BandPassSignal import BandPassSignal
+from signals.fir.BandPassSignal import BandPassSignal
 from signals.ConstantSignal import ConstantSignal
 from signals.ScaledSignal import ScaledSignal
 from signals.SineSignal import SineSignal
@@ -35,6 +36,8 @@ NS_PER_BUFFER = FRAMES_PER_BUFFER / FS * 1000000000
 MAX_TIME_SECONDS = 20
 
 RUN_TYPE = "play"
+
+# logging.basicConfig(level=logging.DEBUG, filename='out/vocoder_2.log', filemode='w')
 
 cutoffs = np.geomspace(MIN_FREQ, MAX_FREQ, NUM_BANDS+1)
 bands = list(zip(cutoffs[:-1], cutoffs[1:]))
@@ -71,6 +74,11 @@ extracted_bands = []
 envelopes = []
 components = []
 for lower, upper in bands:
+    if upper * 4 < 441:
+        bp_fs = 441
+    else:
+        bp_fs = 44100
+    bp_fs = 44100
     bp = BandPassSignal(SignalContext.with_refs({
         "uuid": f"bp-{lower}-{upper}",
         "type": "bp",
@@ -78,6 +86,7 @@ for lower, upper in bands:
         "band_stop": upper,
         "window": "hanning",
         "num_taps": NUM_TAPS,
+        "fs": bp_fs,
     }, {"child": base_signal}))
 
     extracted_bands.append(bp)
@@ -85,7 +94,7 @@ for lower, upper in bands:
     env = WindowMaxSignal(SignalContext.with_refs({
         "uuid": f"env-{lower}-{upper}",
         "type": "win_max",
-        "length": 1 / (1*upper),
+        "length": (bp_fs/FS) / (1*upper),
     }, {"child": bp}))
 
     envelopes.append(env)
@@ -106,7 +115,7 @@ for lower, upper in bands:
 
 component_sum = SummingSignal(SignalContext.with_refs({
     "uuid": "bp_sum",
-    "type": "sum"
+    "type": "sum",
 }, {"children": components}))
 
 
@@ -131,7 +140,7 @@ out_queue = AudioChunkStream(max_depth=2)
 meta_queue = MetadataChunkStream()
 pyaudio_io = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
 signal_input = SignalInputManager(wav)  # use this one to play a wav file
-io_orchestrator = ChunkIO(FS, FRAMES_PER_BUFFER, pyaudio_io, pyaudio_io)
+io_orchestrator = ChunkIO(FS, FRAMES_PER_BUFFER, signal_input, pyaudio_io)
 io_daemon = io_orchestrator.start_daemon(in_queue, out_queue, meta_queue)
 
 metadata: List[ChunkMetadata] = []
@@ -144,6 +153,9 @@ with ThreadPoolExecutor(max_workers=1) as executor:
         while True:
             chunk_metadata: ChunkMetadata = meta_queue.get()
             metadata.append(chunk_metadata)
+            if chunk_metadata is None:
+                print(f"ChunkStream processing aborted!")
+                break
             if chunk_metadata.end > MAX_TIME_SECONDS * FS:
                 print(f"Reach max time: {MAX_TIME_SECONDS} seconds")
                 break

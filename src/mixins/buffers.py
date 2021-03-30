@@ -82,13 +82,15 @@ class TruncatingMixin:
     to provide a get_temporal` implementation with the following behavior:
     @DynamicAttrs
     """
-    def get_temporal(self, fs: Hz, start: Frames, end: Frames):
+    def get_temporal(self, fs: Hz, size: Frames, end: Frames):
         lower, upper = self.get_range(fs)
-        sample_start = to_frames(min(max(start, lower), upper))
+        sample_start = to_frames(min(max(end-size, lower), upper))
         sample_end = to_frames(min(max(end, lower), upper))
-        internal = self.get_temporal_checked(fs, sample_start, sample_end)
-        output = np.zeros(end-start)
-        output[sample_start-start:sample_end-start] = internal
+        sample_size = sample_end - sample_start
+        internal = self.get_temporal_checked(fs, sample_size, sample_end)
+        output = np.zeros(size)
+        offset = to_frames(end-size)
+        output[sample_start-offset:sample_end-offset] = internal
         return output
 
     def get_temporal_checked(self, fs: Hz, start: Frames, end: Frames):

@@ -335,7 +335,36 @@ Solution: We will not allow unbounded signals.
   1. How does this interact with caching?
 1. Does this impose limitations on the frontend?
 
+Resources:
+* https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need
+
 ## Problem 17: Input Devices
 
 1. How do we support MIDI?
   1. Option: MIDI as constants. Need a way to identify MIDI constants (tags?).
+
+## Problem 18: Live Input Sampling Rates
+
+Real-time signal processing often makes use of a frequency response h\[t\] which
+is sample-rate (fs) dependent. Passing the sample rate as a parameter to
+`get_temporal` means the frequency response must either be (1) calculated every
+time or (2) calculated once and cached somewhere.
+
+Should we allow variable sample rates for real-time nodes?
+How would we prevent sampling at the wrong rate?
+
+### Approach 1: Use static sample rates.
+1. Signals would have a "native" fs that is static.
+1. Signals with differing fs cannot be linked.
+1. Provide `DecimatingSignal` and `InterpolatingSignal` to convert between
+sampling rates.
+
+### Approach 2: Provide a mixin for handling variable sample rates. 
+1. Signals can have a "native" fs that is static.
+1. Signals may mix in `ResamplingMixin` to automatically convert output
+at native sampling rate to requested sampling rate.
+1. Provide hints via the `Registry` for static checks of sample rate
+compatibility.
+
+### Solution: We will go with __Approach 2__.
+
