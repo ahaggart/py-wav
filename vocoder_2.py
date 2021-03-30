@@ -131,7 +131,7 @@ out_queue = AudioChunkStream(max_depth=2)
 meta_queue = MetadataChunkStream()
 pyaudio_io = PyAudioStreaming(FS, CHANNELS, FRAMES_PER_BUFFER)
 signal_input = SignalInputManager(wav)  # use this one to play a wav file
-io_orchestrator = ChunkIO(FS, FRAMES_PER_BUFFER, pyaudio_io, pyaudio_io)
+io_orchestrator = ChunkIO(FS, FRAMES_PER_BUFFER, signal_input, pyaudio_io)
 io_daemon = io_orchestrator.start_daemon(in_queue, out_queue, meta_queue)
 
 metadata: List[ChunkMetadata] = []
