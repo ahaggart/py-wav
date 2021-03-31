@@ -37,6 +37,7 @@ class FIRResampler:
             size=sample_size,
             end=sample_end,
         )
+        # resample_poly does not have phase shift -> aliasing
         resampled = resample_poly(buf, up=_L, down=_M)
         # print(f"resampled buffer to {len(resampled)}")
         return resampled[:size]

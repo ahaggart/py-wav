@@ -33,8 +33,11 @@ class StreamingSignal(FIRResampler, Signal):
                 f"with only {self.dur} frames available."
             )
         out = np.zeros(size)
+        if end < 0:
+            return out
         buf_start = max(math.ceil(end-size), 0)
         padding = buf_start - math.ceil(end-size)
+        # print(f"{self.data.uuid} size={size} end={end} padding={padding} buf_start={buf_start}")
         out[padding:padding+to_frames(end)-buf_start] = self.buf[buf_start:to_frames(end)]
         return out
 

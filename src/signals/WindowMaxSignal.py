@@ -15,6 +15,7 @@ class WindowMaxSignal(TemporalDomainHelper, DerivedSignal):
     def get_temporal(self, fs: Hz, size: Frames, end: Frames):
         window_size = int(self.length * fs)
         sample_size = size + window_size - 1
-        buf = self.child.get_temporal(fs, sample_size, end)
+        buf = np.abs(self.child.get_temporal(fs, sample_size, end))
+        # print(f"{self.data.uuid} size={size} end={end} window_size={window_size} buf={len(buf)}")
         windowed = sliding_window_view(buf, window_size)
         return np.max(windowed, axis=1)

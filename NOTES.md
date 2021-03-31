@@ -352,6 +352,7 @@ time or (2) calculated once and cached somewhere.
 
 Should we allow variable sample rates for real-time nodes?
 How would we prevent sampling at the wrong rate?
+How will we handle group delay?
 
 ### Approach 1: Use static sample rates.
 1. Signals would have a "native" fs that is static.
