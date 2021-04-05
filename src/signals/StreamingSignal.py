@@ -1,12 +1,9 @@
-import math
-
 import numpy as np
 
 from Signal import Signal
 from SignalContext import SignalContext
 from custom_types import Hz, Frames, FrameRange
 from mixins.sampling import FIRResampler
-from util.frames import to_frames
 
 
 class StreamingSignal(FIRResampler, Signal):
@@ -20,37 +17,25 @@ class StreamingSignal(FIRResampler, Signal):
     def _get_fs(self) -> Frames:
         return self.source_fs
 
-    def _get_temporal(self, size: Frames, end: Frames):
-        # # TODO: handle different fs gracefully
-        # if fs != self.source_fs:
-        #     raise ValueError(
-        #         f"StreamingSignal {self.data.uuid} must be sampled "
-        #         f" at {self.source_fs} frames/s"
-        #     )
-        if to_frames(end) > self.dur:
+    def _get_temporal(self, start: Frames, end: Frames):
+        if end > self.dur:
             raise ValueError(
-                f"StreamingSignal {self.data.uuid} sampled for {size} up to {end} "
+                f"StreamingSignal {self.data.uuid} sampled for {start} to {end} "
                 f"with only {self.dur} frames available."
             )
+        size = end - start
         out = np.zeros(size)
         if end < 0:
             return out
-        buf_start = max(math.ceil(end-size), 0)
-        padding = buf_start - math.ceil(end-size)
-        # print(f"{self.data.uuid} size={size} end={end} padding={padding} buf_start={buf_start}")
-        out[padding:padding+to_frames(end)-buf_start] = self.buf[buf_start:to_frames(end)]
+        sample_size = min(end, size)
+        padding = size - sample_size
+        out[padding:padding+sample_size] = self.buf[end-sample_size:end]
         return out
 
     def get_spectral(self, fs: Hz):
         raise RuntimeError("Streaming signal does not allow spectral analysis")
 
     def _get_range(self) -> FrameRange:
-        # # TODO: handle different fs gracefully
-        # if fs != self.source_fs:
-        #     raise ValueError(
-        #         f"StreamingSignal {self.data.uuid} must be sampled "
-        #         f" at {self.source_fs} frames/s"
-        #     )
         return 0, self.dur
 
     def put_data(self, start, end, buf):

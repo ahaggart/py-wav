@@ -1,5 +1,3 @@
-import math
-
 import numpy as np
 from scipy.signal import firwin
 
@@ -32,7 +30,7 @@ class BandPassSignal(FIRResampler, TemporalDomainHelper, Signal):
     def _get_fs(self) -> Frames:
         return self.fs
 
-    def _get_temporal(self, size: Frames, end: Frames):
+    def _get_temporal(self, start: Frames, end: Frames):
         """Compute yt at the given points.
         convolve returns N + M - 1 samples
         [0:M-1] samples have lower boundary effect
@@ -42,24 +40,15 @@ class BandPassSignal(FIRResampler, TemporalDomainHelper, Signal):
         1. "back-pad" N by M-1
         2. drop last M-1 points
         """
-        # if fs not in self.ht_cache:
-        #     # TODO: nodes should not store any state
-        #     self.ht_cache[fs] = firwin(
-        #         self.num_taps,
-        #         cutoff=(self.band_start, self.band_stop),
-        #         window=self.window,
-        #         fs=fs,
-        #         pass_zero='bandpass',
-        #     )
-        # ht = self.ht_cache[fs]
         ht = self.ht
 
         # back-pad the sample to avoid boundary effects
+        size = end - start
         sample_size = size + len(ht) - 1
-        sample = self.child.get_temporal(self.fs, sample_size, end)
+        sample = self.child.get_temporal(self.fs, end-sample_size, end)
         conv = np.convolve(sample, ht)
 
-        return conv[len(ht)-1:-len(ht)+1]
+        return conv[len(ht)-1:-(len(ht)-1)]
 
-    def get_range(self, fs: Hz) -> FrameRange:
-        return self.child.get_range(fs)
+    def _get_range(self) -> FrameRange:
+        return self.child.get_range(self.fs)

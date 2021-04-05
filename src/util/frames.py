@@ -6,11 +6,11 @@ from custom_types import Partial, Frames
 
 
 def to_frames(partial: Partial) -> Frames:
-    return floor(partial)
+    return round(partial)
 
 
 def np_to_frames(buf):
-    return np.ceil(buf).astype('int')
+    return np.round(buf).astype('int')
 
 
 def to_bufsize(period: Partial) -> Frames:

@@ -369,3 +369,15 @@ compatibility.
 
 ### Solution: We will go with __Approach 2__.
 
+## Problem 19: Downsampling alignment
+
+When working with downsampled signals, the position of the end of the requested
+sample affects which frames are thrown away during downsampling. This results in
+inconsistencies. For example, for signal `s` which is downsampled by a factor of
+`10`, `s.get_temporal(10, 10)[0:5] != s.get_temporal(5, 5)`
+
+We should continue to require that `end` be given in whole frame amounts. The
+use case for partial frame amounts arises when upsampling a signal--in this case
+we should round UP to the next whole-frame amount. This approach dovetails
+nicely with downsampling alignment.
+

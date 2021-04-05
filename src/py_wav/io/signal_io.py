@@ -17,7 +17,7 @@ class SignalStreamWorker(StreamWorker):
         metadata = chunk.metadata
         fs = metadata.fs
         self.input_signal.put_data(metadata.start, metadata.end, chunk.buf)
-        return self.output_signal.get_temporal(fs, metadata.end-metadata.start, metadata.end)
+        return self.output_signal.get_temporal(fs, metadata.start, metadata.end)
 
 
 class SignalInputManager(InputManager):

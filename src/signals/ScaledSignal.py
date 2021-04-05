@@ -13,11 +13,10 @@ class ScaledSignal(TemporalDomainHelper, DerivedSignal):
         DerivedSignal.__init__(self, context, 'child')
         self.factor = self.data.resolved_refs['factor']
 
-    def get_temporal(self, fs: Hz, size: Frames, end: Frames):
-        # print(f"sampling {size} frames up to {end} @ {fs}")
+    def get_temporal(self, fs: Hz, start: Frames, end: Frames):
         return np.multiply(
-            self.child.get_temporal(fs, size, end),
-            self.factor.get_temporal(fs, size, end),
+            self.child.get_temporal(fs, start, end),
+            self.factor.get_temporal(fs, start, end),
         )
 
 

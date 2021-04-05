@@ -228,5 +228,66 @@ def chunking_comparison():
     plt.show()
 
 
+def sample_buffer(buf, size: int, end: float):
+    out = np.zeros(size)
+    end_frame = math.floor(end)
+    sample_end = min(end_frame, len(buf))
+    start = end_frame - size
+    sample_start = max(0, start)
+    pad = sample_start - start
+    out[pad:pad+sample_end] = buf[sample_start:sample_end]
+    return out
+
+
+def get_group_delay(num_taps: int):
+    return math.ceil((num_taps-1)/2)
+
+
+def resample(buf, size: int, end: float, fs: int, up: int = 1, down: int = 1, num_taps: int = 1000):
+    conversion_factor = up / down
+    sample_pad = math.ceil((num_taps - 1) / up)
+    sample_size = math.ceil(math.ceil(size * down) / up)
+    sample_end = end / conversion_factor
+    sample = sample_buffer(buf, sample_size + sample_pad, sample_end)
+
+    target_nyq = fs * conversion_factor / 2
+    source_nyq = fs / 2
+    nyq = min(target_nyq, source_nyq)
+    ht = firwin(
+        numtaps=num_taps,
+        cutoff=nyq,
+        fs=fs * up,
+    )
+    upsampled = np.zeros(len(sample) * up)
+    upsampled[-len(sample) * up::up] = sample
+    antialiased = np.convolve(upsampled, ht)[num_taps-1:-(num_taps-1)]
+    resampled = antialiased[-(down * size)::down]
+    return resampled
+
+
+def chunk_experiment():
+    fs, buf = load_wav()
+    length = len(buf)
+    num_taps = 1000
+    up = 13
+    down = 13
+    one_shot = resample(buf, length, length, fs, up, down, num_taps=num_taps)
+
+    chunk_size = 128
+    chunked = np.zeros(length)
+    for step in range(1, math.ceil(length/chunk_size)+1):
+        end = min(length, step * chunk_size)
+        chunk = resample(buf, chunk_size, end, fs, up, down, num_taps=num_taps)
+        chunked[end-chunk_size:end] = chunk
+
+    fig, (axes) = plt.subplots(3, 2)
+
+    plot_with_freq(axes[0], one_shot, fs, 0, 0, fs / 2)
+    plot_with_freq(axes[1], chunked, fs, 0, 0, fs / 2)
+    plot_diff(axes[2][0], one_shot, chunked, 1)
+
+    plt.show()
+
+
 if __name__ == "__main__":
-    chunking_comparison()
+    chunk_experiment()
