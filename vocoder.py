@@ -1,3 +1,5 @@
+import math
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -13,7 +15,7 @@ from sources.aggregations.AdditiveSource import AdditiveSource
 from sources.transform.ScaledSource import ScaledSource
 from sources.waveforms.SineSource import SineSource
 
-DRAW_COMPONENTS = False
+DRAW_COMPONENTS = True
 
 # human hearing: 20hz - 20khz
 MIN_FREQ = 20
@@ -49,7 +51,7 @@ for i in range(num_components):
     avg_freq = (lower + upper) / 2
     center_idx = band.get_period(fs) / 2
     fund_freq = (np.abs(np.argmax(band.get_buffer(fs)) - center_idx)) * float(fs) / dur
-    carrier_freq = fund_freq
+    carrier_freq = lower
     print(f"lower: {lower} upper: {upper} avg: {avg_freq} fund: {fund_freq}")
     carrier = SineSource(carrier_freq, dur / fs)
     component = ScaledSource(env, carrier)

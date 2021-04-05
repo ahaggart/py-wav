@@ -9,6 +9,20 @@ from sources.Source import Source
 from util.frames import to_frames
 
 
+def play_from_buffer(fs: Frames, buffer):
+    # Ensure that highest value is in 16-bit range
+    audio = buffer / np.max(np.abs(buffer)) * (2 ** 15 - 1)
+
+    # Convert to 16-bit data
+    audio = audio.astype(np.int16)
+
+    # Start playback
+    play_obj = sa.play_buffer(audio, 1, 2, fs)
+
+    # Wait for playback to finish before exiting
+    play_obj.wait_done()
+
+
 def play_from_source(root: Source,
                      fs: int,
                      start: Optional[Frames] = None,

@@ -22,9 +22,10 @@ class OffsetSignal(TemporalDomainHelper, Signal):
 
         return child_lower+offset_frames, child_upper+offset_frames
 
-    def get_temporal(self, fs: Hz, start: Frames, end: Frames):
+    def get_temporal(self, fs: Hz, size: Frames, end: Frames):
         offset_frames = to_frames(self.get_offset_frames(fs))
-        return self.child.get_temporal(fs, start-offset_frames, end-offset_frames)
+        sample_end = to_frames(end - self.get_offset_frames(fs))
+        return self.child.get_temporal(fs, size, sample_end)
 
 
 register(

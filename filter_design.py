@@ -1,5 +1,3 @@
-import time
-
 import numpy as np
 from scipy import signal
 import matplotlib.pyplot as plt
@@ -7,7 +5,7 @@ import matplotlib.pyplot as plt
 from Signal import Signal
 from SignalContext import SignalContext
 from custom_types import Frames, Hz
-from signals.BandPassSignal import BandPassSignal
+from signals.fir.BandPassSignal import BandPassSignal
 from signals.WavSignal import WavSignal
 
 

@@ -3,7 +3,7 @@ import numpy as np
 from Signal import Signal
 from SignalContext import SignalContext
 from SignalRegistry import register
-from custom_types import Frames, Hz, Partial, FrameRange, Seconds
+from custom_types import Frames, Hz, FrameRange, Seconds
 from mixins.buffers import TruncatingMixin
 from mixins.domains import TemporalDomainHelper
 
