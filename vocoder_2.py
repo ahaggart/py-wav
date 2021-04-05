@@ -188,10 +188,9 @@ if RUN_TYPE == "draw":
     exit()
 elif RUN_TYPE == "draw_single":
     stream_signal.put_data(0, LENGTH, wav.get_temporal(FS, 0, LENGTH))
-    stream_signal.put_data(LENGTH, LENGTH+10000, np.zeros(10000))
     fig, (axes) = plt.subplots(1, 2)
     component = extracted_bands[0]
-    chunk_size = 200
+    chunk_size = 111
     one_shot = component.get_temporal(FS, 0, LENGTH)
     buf = np.zeros(LENGTH)
     for end in range(LENGTH, 0, -chunk_size):
@@ -207,31 +206,28 @@ elif RUN_TYPE == "draw_single":
 
     plot_with_freq(
         axes,
-        buf=single_chunk,
+        buf=buf,
         fs=FS,
         lower=component.band_start,
         upper=component.band_stop,
-        freq_limit=None,
-        # freq_limit=component.band_stop*2,
+        # freq_limit=None,
+        freq_limit=component.band_stop*2,
         label="chunked",
     )
     plot_with_freq(
         axes,
-        buf=one_shot_chunk,
+        buf=one_shot,
         fs=FS,
         lower=component.band_start,
         upper=component.band_stop,
-        freq_limit=None,
-        # freq_limit=component.band_stop*2,
+        # freq_limit=None,
+        freq_limit=component.band_stop*2,
         label="one-shot",
     )
-    axes[0].plot(one_shot_chunk-single_chunk, label="diff")
+    axes[0].plot(one_shot-buf, label="diff")
     axes[0].legend()
     axes[1].legend()
     plt.show()
-    # axes[i+1][0].plot(components[i].get_temporal(FS, LENGTH, LENGTH))
-    # axes[i+1][0].plot(envelopes[i].get_temporal(FS, LENGTH, LENGTH))
-    # print(extracted_bands[i].band_start)
     exit()
 elif RUN_TYPE == "analyze":
     fig, (axes) = plt.subplots(2, 3)

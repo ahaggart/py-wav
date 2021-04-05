@@ -58,10 +58,16 @@ class FIRResampler:
             )
         ht = self.ht_cache[nyq]
         filter_pad = (num_taps-1)
-        m_start = start * _M - filter_pad
-        m_end = end * _M
+        m_start = start * _M - filter_pad  # back-sampling
+
+        # we only need the first frame of the last block
+        # thus we subtract (_M - 1) frames from the end
+        m_end = (end - 1) * _M + 1  # <-> end * _M - (_M - 1)
+
         l_start = math.floor(m_start / _L)
-        l_end = math.ceil(m_end / _L)  # TODO: implement block delay
+        l_end = math.ceil(m_end / _L)
+
+        # compute the decimation indices the l-buffer
         m_offset = m_start - l_start * _L
         m_size = size * _M
 
