@@ -3,21 +3,20 @@ import numpy as np
 from Signal import Signal
 from SignalContext import SignalContext
 from custom_types import Hz, Frames, FrameRange
-from mixins.sampling import FIRResampler
+from mixins.sampling import ResampledSignal
 
 
-class StreamingSignal(FIRResampler, Signal):
+class StreamingSignal(Signal):
     def __init__(self, context: SignalContext):
-        FIRResampler.__init__(self)
         Signal.__init__(self, context)
-        self.source_fs = int(self.data.data['source_fs'])
-        self.buf = np.zeros(self.source_fs * 10)
+        self.fs = int(self.data.data['source_fs'])
+        self.buf = np.zeros(self.fs * 10)
         self.dur = 0
 
-    def _get_fs(self) -> Frames:
-        return self.source_fs
+    def get_fs(self) -> Frames:
+        return self.fs
 
-    def _get_temporal(self, start: Frames, end: Frames):
+    def get_temporal(self, start: Frames, end: Frames):
         if end > self.dur:
             raise ValueError(
                 f"StreamingSignal {self.data.uuid} sampled for {start} to {end} "
@@ -32,10 +31,10 @@ class StreamingSignal(FIRResampler, Signal):
         out[padding:padding+sample_size] = self.buf[end-sample_size:end]
         return out
 
-    def get_spectral(self, fs: Hz):
+    def get_spectral(self):
         raise RuntimeError("Streaming signal does not allow spectral analysis")
 
-    def _get_range(self) -> FrameRange:
+    def get_range(self) -> FrameRange:
         return 0, self.dur
 
     def put_data(self, start, end, buf):

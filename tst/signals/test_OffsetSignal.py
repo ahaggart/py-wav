@@ -24,26 +24,26 @@ class TestOffsetSignal(SignalTestCase):
         offset = self.create_signal(0, [0, 1, 2, 3, 4])
         self.assertEqualsNumpy(
             [0, 1, 2, 3, 4],
-            offset.get_temporal(self.test_fs, 0, 5)
+            offset.get_temporal(0, 5)
         )
 
         self.assertEqual(
             (0, 5),
-            offset.get_range(self.test_fs)
+            offset.get_range()
         )
 
     def test_offset_positive_bounded(self):
         offset = self.create_signal(4, [0, 1, 2, 3, 4])
         self.assertEqualsNumpy(
             [0, 0, 0, 0, 0, 1, 2, 3, 4],
-            offset.get_temporal(self.test_fs, 0, 9)
+            offset.get_temporal(0, 9)
         )
-        self.assertEqual((4, 9), offset.get_range(self.test_fs))
+        self.assertEqual((4, 9), offset.get_range())
 
     def test_offset_negative_bounded(self):
         offset = self.create_signal(-4, [0, 1, 2, 3, 4])
         self.assertEqualsNumpy(
             [0, 1, 2, 3, 4, 0, 0, 0, 0],
-            offset.get_temporal(self.test_fs, -4, 5)
+            offset.get_temporal(-4, 5)
         )
-        self.assertEqual((-4, 1), offset.get_range(self.test_fs))
+        self.assertEqual((-4, 1), offset.get_range())

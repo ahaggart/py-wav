@@ -10,11 +10,14 @@ class DerivedSignal(Signal):
         Signal.__init__(self, context)
         self.child = self.data.resolved_refs[child]
 
-    def get_spectral(self, fs: Hz):
-        return self.child.get_spectral(fs)
+    def get_spectral(self):
+        return self.child.get_spectral()
 
-    def get_temporal(self, fs: Hz, start: Frames, end: Frames):
-        return self.child.get_temporal(fs, start, end)
+    def get_temporal(self, start: Frames, end: Frames):
+        return self.child.get_temporal(start, end)
 
-    def get_range(self, fs: Hz) -> FrameRange:
-        return self.child.get_range(fs)
+    def get_range(self) -> FrameRange:
+        return self.child.get_range()
+
+    def get_fs(self) -> Frames:
+        return self.child.get_fs()

@@ -10,6 +10,7 @@ import numpy as np
 
 from SignalContext import SignalContext
 from custom_types import Frames, Hz
+from mixins.sampling import ResampledSignal
 from output import play_from_buffer
 from py_wav.io.signal_io import SignalStreamWorker, SignalInputManager
 from py_wav.io.pyaudio import PyAudioStreaming
@@ -38,8 +39,8 @@ FRAMES_PER_BUFFER = 256
 NS_PER_BUFFER = FRAMES_PER_BUFFER / FS * 1000000000
 MAX_TIME_SECONDS = 20
 
-RUN_TYPE = "draw_single"
-# RUN_TYPE = "play_online"
+# RUN_TYPE = "draw_single"
+RUN_TYPE = "play_offline"
 
 # logging.basicConfig(level=logging.DEBUG, filename='out/vocoder_2.log', filemode='w')
 
@@ -63,6 +64,7 @@ stream_gain = ConstantSignal(SignalContext({
     "type": "constant",
     "value": 10,
     "dur": MAX_TIME_SECONDS,
+    "fs": FS,
 }))
 
 stream_amp = ScaledSignal(SignalContext.with_refs({
@@ -77,8 +79,18 @@ LENGTH = Frames(len(wav.get_source_buffer()))
 extracted_bands = []
 envelopes = []
 components = []
+
+fs_opts = [441, 882, 1764, 8820, 44100]
+decimators = {}
+for opt in fs_opts:
+    decimators[opt] = ResampledSignal(SignalContext.with_refs({
+        "uuid": f"M-{FS}-{opt}",
+        "type": "resampler",
+        "target_fs": opt,
+    }, {"child": base_signal}))
+
+
 for lower, upper in bands:
-    fs_opts = [441, 882, 1764, 8820]
     bp_fs = 44100
     for fs_opt in fs_opts:
         if upper * 3 < fs_opt:
@@ -90,6 +102,9 @@ for lower, upper in bands:
     #     offset_s = math.ceil((NUM_TAPS-1)/2) / 44100
     # else:
     #     offset_s = math.ceil((NUM_TAPS-1)/2) / 4410
+    # bp_fs = 44100
+
+    decimator = decimators[bp_fs]
 
     bp = BandPassSignal(SignalContext.with_refs({
         "uuid": f"bp-{lower}-{upper}",
@@ -99,7 +114,13 @@ for lower, upper in bands:
         "window": "hanning",
         "num_taps": NUM_TAPS,
         "fs": bp_fs,
-    }, {"child": base_signal}))
+    }, {"child": decimator}))
+
+    interpolator = ResampledSignal(SignalContext.with_refs({
+        "uuid": f"L-{lower}-{upper}",
+        "type": "resampler",
+        "target_fs": FS,
+    }, {"child": bp}))
 
     # offset = OffsetSignal(SignalContext.with_refs({
     #     "uuid": f"offset-{lower}-{upper}",
@@ -107,13 +128,13 @@ for lower, upper in bands:
     #     "offset": offset_s,
     # }, {"child": bp}))
 
-    extracted_bands.append(bp)
+    extracted_bands.append(interpolator)
 
     env = WindowMaxSignal(SignalContext.with_refs({
         "uuid": f"env-{lower}-{upper}",
         "type": "win_max",
         "length": 1 / (1*upper),
-    }, {"child": bp}))
+    }, {"child": interpolator}))
 
     envelopes.append(env)
 
@@ -122,6 +143,7 @@ for lower, upper in bands:
         "type": "sine",
         "freq": math.sqrt(lower*lower+upper*upper),
         "dur": MAX_TIME_SECONDS,
+        "fs": FS,
     }))
 
     component = ScaledSignal(SignalContext.with_refs({
@@ -191,37 +213,37 @@ elif RUN_TYPE == "draw_single":
     fig, (axes) = plt.subplots(1, 2)
     component = extracted_bands[0]
     chunk_size = 111
-    one_shot = component.get_temporal(FS, 0, LENGTH)
+    one_shot = component.get_temporal(0, LENGTH)
     buf = np.zeros(LENGTH)
     for end in range(LENGTH, 0, -chunk_size):
         sample_size = min(end, chunk_size)
         start = end - sample_size
-        buf[start:end] = component.get_temporal(FS, start, end)
+        buf[start:end] = component.get_temporal(start, end)
 
     offset = 60073
     sample_end = LENGTH - offset
     sample_start = sample_end-chunk_size
-    single_chunk = component.get_temporal(FS, sample_start, sample_end)
+    single_chunk = component.get_temporal(sample_start, sample_end)
     one_shot_chunk = one_shot[sample_start:sample_end]
 
     plot_with_freq(
         axes,
         buf=buf,
         fs=FS,
-        lower=component.band_start,
-        upper=component.band_stop,
+        lower=component.child.band_start,
+        upper=component.child.band_stop,
         # freq_limit=None,
-        freq_limit=component.band_stop*2,
+        freq_limit=component.child.band_stop*2,
         label="chunked",
     )
     plot_with_freq(
         axes,
         buf=one_shot,
         fs=FS,
-        lower=component.band_start,
-        upper=component.band_stop,
+        lower=component.child.band_start,
+        upper=component.child.band_stop,
         # freq_limit=None,
-        freq_limit=component.band_stop*2,
+        freq_limit=component.child.band_stop*2,
         label="one-shot",
     )
     axes[0].plot(one_shot-buf, label="diff")
@@ -235,8 +257,8 @@ elif RUN_TYPE == "analyze":
 elif RUN_TYPE == "play_online":
     pass
 elif RUN_TYPE == "play_offline":
-    stream_signal.put_data(0, LENGTH, wav.get_temporal(FS, 0, LENGTH))
-    buf = component_sum.get_temporal(FS, 0, LENGTH)
+    stream_signal.put_data(0, LENGTH, wav.get_temporal(0, LENGTH))
+    buf = component_sum.get_temporal(0, LENGTH)
     play_from_buffer(FS, buf)
     exit()
 else:
@@ -280,6 +302,6 @@ print(f"frames processed: {total_frames}")
 print(f"streamed length: {stream_signal.dur}")
 
 fig, (axes) = plt.subplots(2, 1)
-axes[0].plot(component_sum.get_temporal(FS, 0, total_frames))
+axes[0].plot(component_sum.get_temporal(0, total_frames))
 plot_timing_data(axes[1], FS, metadata, lines=NS_PER_BUFFER)
 plt.show()

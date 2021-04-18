@@ -13,12 +13,16 @@ class SineSignal(TruncatingMixin, TemporalDomainHelper, Signal):
         Signal.__init__(self, context)
         self.freq = Hz(self.data.data['freq'])
         self.dur = Seconds(self.data.data['dur'])
+        self.fs = int(self.data.data['fs'])
 
-    def get_temporal_checked(self, fs: Hz, start: Frames, end: Frames):
-        return np.sin(np.arange(start, end) * 2 * self.freq * np.pi / fs)
+    def get_temporal_checked(self, start: Frames, end: Frames):
+        return np.sin(np.arange(start, end) * 2 * self.freq * np.pi / self.fs)
 
-    def get_range(self, fs: Hz) -> FrameRange:
-        return 0, self.dur * fs
+    def get_range(self) -> FrameRange:
+        return 0, self.dur * self.get_fs()
+
+    def get_fs(self) -> Frames:
+        return self.fs
 
 
 register(

@@ -13,10 +13,14 @@ class ScaledSignal(TemporalDomainHelper, DerivedSignal):
         DerivedSignal.__init__(self, context, 'child')
         self.factor = self.data.resolved_refs['factor']
 
-    def get_temporal(self, fs: Hz, start: Frames, end: Frames):
+        if self.factor.get_fs() != self.child.get_fs():
+            raise ValueError(f"factor fs={self.factor.get_fs()} "
+                             f"does not match child fs={self.child.get_fs()}")
+
+    def get_temporal(self, start: Frames, end: Frames):
         return np.multiply(
-            self.child.get_temporal(fs, start, end),
-            self.factor.get_temporal(fs, start, end),
+            self.child.get_temporal(start, end),
+            self.factor.get_temporal(start, end),
         )
 
 

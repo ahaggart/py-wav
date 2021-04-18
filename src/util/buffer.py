@@ -19,8 +19,8 @@ def get_valid_range(period: Partial,
         return 0, bufsize
 
 
-def get_centered_sample(signal: Signal, fs: Hz):
-    lower, upper = signal.get_range(fs)
+def get_centered_sample(signal: Signal):
+    lower, upper = signal.get_range()
     lower_frames = to_frames(lower)
     upper_frames = to_frames(upper)
-    return np.roll(signal.get_temporal(fs, lower_frames, upper_frames), lower_frames)
+    return np.roll(signal.get_temporal(lower_frames, upper_frames), lower_frames)

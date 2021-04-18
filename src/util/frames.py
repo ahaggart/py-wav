@@ -6,7 +6,7 @@ from custom_types import Partial, Frames
 
 
 def to_frames(partial: Partial) -> Frames:
-    return round(partial)
+    return floor(partial)
 
 
 def np_to_frames(buf):

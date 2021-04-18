@@ -14,12 +14,16 @@ class ConstantSignal(TruncatingMixin, TemporalDomainHelper, Signal):
         TemporalDomainHelper.__init__(self)
         self.value = float(self.data.data['value'])
         self.dur = Seconds(self.data.data['dur'])
+        self.fs = int(self.data.data['fs'])
 
-    def get_temporal_checked(self, fs: Hz, start: Frames, end: Frames):
+    def get_temporal_checked(self, start: Frames, end: Frames):
         return np.full(end-start, self.value)
 
-    def get_range(self, fs: Hz) -> FrameRange:
-        return 0, self.dur * fs
+    def get_range(self) -> FrameRange:
+        return 0, self.dur * self.fs
+
+    def get_fs(self) -> Frames:
+        return self.fs
 
 
 register(

@@ -1,15 +1,13 @@
-from typing import Optional
-
 import numpy as np
 
 from Signal import Signal
 from SignalContext import SignalContext
 from SignalRegistry import register
-from core.throwables import AperiodicResultException
-from custom_types import Hz, Frames, FrameRange, Partial
+from custom_types import Frames, FrameRange
 from mixins.domains import TemporalDomainHelper
-from util.buffer import get_valid_range, get_centered_sample
+from util.buffer import get_centered_sample
 from util.frames import to_frames, np_to_frames
+from util.graph import verify_fs
 
 
 class VariableOffsetSignal(TemporalDomainHelper, Signal):
@@ -18,42 +16,46 @@ class VariableOffsetSignal(TemporalDomainHelper, Signal):
         TemporalDomainHelper.__init__(self)
         self.child = self.data.resolved_refs['child']
         self.offset = self.data.resolved_refs['offset']
+        verify_fs(child=self.child, offset=self.offset)
 
-    def get_temporal(self, fs: Hz, start: Frames, end: Frames):
-        offsets_seconds = self.offset.get_temporal(fs, start, end)
+    def get_fs(self):
+        return self.child.get_fs()
+
+    def get_temporal(self, start: Frames, end: Frames):
+        fs = self.get_fs()
+        offsets_seconds = self.offset.get_temporal(start, end)
         offsets_partials = offsets_seconds * fs
         offsets_absolute = np.arange(start, end) - offsets_partials
         offsets_frames = np_to_frames(offsets_absolute)
 
         sample_start = np.min(offsets_frames)
         sample_end = np.max(offsets_frames) + 1
-        sample = self.child.get_temporal(fs, sample_start, sample_end)
+        sample = self.child.get_temporal(sample_start, sample_end)
 
         return sample[offsets_frames - sample_start]
 
-    def get_range(self, fs: Hz) -> FrameRange:
+    def get_range(self) -> FrameRange:
         """
         For bounded child and bounded parameter, sample the parameter to
         compute the lower and upper extent.
         """
-        child_lower, child_upper = self.child.get_range(fs)
+        child_lower, child_upper = self.child.get_range()
 
         return self.calculate_extent(
-            fs, to_frames(child_lower), to_frames(child_upper)
+            to_frames(child_lower), to_frames(child_upper)
         )
 
     def calculate_extent(self,
-                         fs: Hz,
                          child_lower: Frames,
                          child_upper: Frames):
-        offset_sample = np_to_frames(get_centered_sample(self.offset, fs))
+        fs = self.get_fs()
+        offset_sample = np_to_frames(get_centered_sample(self.offset))
         offset_max = np.max(offset_sample)
         offset_min = np.min(offset_sample)
 
         # arrangement:
         #  ... | offset_min | child range | offset_max | ...
         offset_seconds = self.offset.get_temporal(
-            fs,
             child_lower+offset_min,
             child_upper+offset_max,
         )
@@ -74,11 +76,6 @@ class VariableOffsetSignal(TemporalDomainHelper, Signal):
         upper = max(child_lower + offset_min + upper_idx + 1, child_upper)
 
         return lower, upper
-
-    def get_max_offset(self, fs: Hz, start: Frames, end: Frames):
-        offsets = get_centered_sample(self.offset, fs) * fs
-        positions = np.arange(len(offsets)) * fs
-        return np.max(offsets+positions)
 
 
 register(
